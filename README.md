@@ -48,7 +48,7 @@ t = about_time(func_1)
 t = about_time(lambda: func_2('params'))
 ```
 
-Or you mix and match both:
+Or you can mix and match both:
 
 ```python
 with about_time() as t_whole:
