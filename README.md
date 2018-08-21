@@ -44,8 +44,8 @@ There's also the `duration` property, which returns the actual float time in sec
 You can also use it like this:
 
 ```python
-t = about_time(func_1)
-t = about_time(lambda: func_2('params'))
+t_1 = about_time(func_1)
+t_2 = about_time(lambda: func_2('params'))
 ```
 
 If you use the callable handler syntax, there will be a new field called `result` to get the outcome of the function!
@@ -74,6 +74,8 @@ duration (float seconds) | duration_human
 68.993534 | "0:01:08.9"
 125.825543 | "0:02:05.8"
 4488.39553443 | "1:14:48.3"
+
+In pythons >= `3.3`, the code uses the new `time.perf_counter` to gain from the higher resolution and smaller propagating errors. In older versions, it is used `time.time`.
 
 
 # How do I install it?
