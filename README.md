@@ -58,27 +58,22 @@ with about_time() as t_whole:
     t_2 = about_time(lambda: func_2('params'))
 ```
 
-The `duration_human` shows timings like these (directly from the unit tests :):
+The `duration_human` shows shorter, abbreviated timings. Smaller than 60 seconds they have up to 2 digits precision and small text, and starting from 1 minute, a "hours:minutes:seconds.M" milliseconds. Some examples directly from the unit tests:
 
 duration (float seconds) | duration_human
 :---: | :---:
 .00001 | "0.0s"
-.01 | "0.01s"
-.014 | "0.01s"
-.015 | "0.01s"
+.01543525 | "0.01s"
 .0199999 | "0.01s"
-.1099999 | "0.1s"
 .1599999 | "0.15s"
-.8015 | "0.8s"
-3.434999 | "3.43s"
-59.99 | "59.99s"
-59.999 | "59.99s"
-60.0 | "0:01:00"
-68.09 | "0:01:08"
-60.9 | "0:01:00.9"
-60.99 | "0:01:00.9"
-125.825 | "0:02:05.8"
-4488.395 | "1:14:48.3"
+.80153423 | "0.8s"
+3.434999432 | "3.43s"
+59.999423 | "59.99s"
+60.05645534 | "0:01:00"
+68.0953454 | "0:01:08"
+68.993534 | "0:01:08.9"
+125.825543 | "0:02:05.8"
+4488.39553443 | "1:14:48.3"
 
 
 # How do I install it?
