@@ -5,23 +5,24 @@ import pytest
 from about_time import about_time
 from about_time.about_time import Handle
 
-def test_timer_context_manager():
+
+@pytest.fixture(params=[True, False])
+def bool1(request):
+    return request.param
+
+
+def test_timer_context_manager_and_callable_handler():
+    start, end = 1.4, 2.65
     with mock.patch('time.perf_counter') as mt:
-        mt.side_effect = (1.4, 2.65)
+        mt.side_effect = (start, end)
 
-        with about_time() as t:
-            pass
+        if bool1:
+            with about_time() as t:
+                pass
+        else:
+            t = about_time(lambda: 1)
 
-    assert t.duration == 1.25
-
-
-def test_timer_callable_handler():
-    with mock.patch('time.perf_counter') as mt:
-        mt.side_effect = (1.4, 2.65)
-
-        t = about_time(lambda: 1)
-
-    assert t.duration == 1.25
+    assert t.duration == end - start
 
 
 def test_context_manager_dont_have_result():
@@ -35,12 +36,6 @@ def test_context_manager_dont_have_result():
 def test_callable_handler_has_result():
     t = about_time(lambda: 1)
     assert t.result == 1
-
-
-@pytest.fixture(params=[True, False])
-def bool1(request):
-    return request.param
-
 
 
 @pytest.mark.parametrize('duration, expected', [
