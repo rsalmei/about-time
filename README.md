@@ -41,12 +41,14 @@ print(f'total time: {t_whole.duration_human}')
 
 There's also the `duration` property, which returns the actual float time in seconds.
 
-You can also use it like:
+You can also use it like this:
 
 ```python
 t = about_time(func_1)
 t = about_time(lambda: func_2('params'))
 ```
+
+If you use the callable handler syntax, there will be a new field called `result` to get the outcome of the function!
 
 Or you can mix and match both:
 
@@ -55,6 +57,28 @@ with about_time() as t_whole:
     t_1 = about_time(func_1)
     t_2 = about_time(lambda: func_2('params'))
 ```
+
+The `duration_human` shows timings like these (directly from the unit tests :):
+
+duration (float seconds) | duration_human
+:---: | :---:
+.00001 | "0.0s"
+.01 | "0.01s"
+.014 | "0.01s"
+.015 | "0.01s"
+.0199999 | "0.01s"
+.1099999 | "0.1s"
+.1599999 | "0.15s"
+.8015 | "0.8s"
+3.434999 | "3.43s"
+59.99 | "59.99s"
+59.999 | "59.99s"
+60.0 | "0:01:00"
+68.09 | "0:01:08"
+60.9 | "0:01:00.9"
+60.99 | "0:01:00.9"
+125.825 | "0:02:05.8"
+4488.395 | "1:14:48.3"
 
 
 # How do I install it?
