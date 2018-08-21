@@ -13,7 +13,7 @@ def get_readme():
 setup(
     name='about-time',
     version=about_time.__version__,
-    description='Python small tool to track time of code blocks',
+    description='Small tool to track time of Python code blocks.',
     long_description=get_readme(),
     long_description_content_type='text/markdown',
     url='https://github.com/rsalmei/about-time',
