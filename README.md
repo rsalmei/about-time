@@ -50,6 +50,10 @@ t_2 = about_time(lambda: func_2('params'))
 
 If you use the callable handler syntax, there will be a new field called `result` to get the outcome of the function!
 
+```python
+results = t_1.result, t_2.result
+```
+
 Or you can mix and match both:
 
 ```python
