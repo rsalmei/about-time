@@ -9,7 +9,7 @@
 ## Small tool to track time of Python code blocks.
 
 
-# What does it do?
+## What does it do?
 
 There are several times where we need to instrument and log code execution, to see where complex pipelines are spending the most time in.
 
@@ -19,13 +19,13 @@ This tool measures the execution time of a block of code, and can now even count
 and the throughput of them, always with a beautiful "human" representation.
 
 
-# How to use it?
+## How to use it?
 
 There's three modes of operation: context manager, callable handler and
 iterator metrics.
 
 
-## 1. Use it like a context manager:
+### 1. Use it like a context manager:
 
 ```python
 from about_time import about_time
@@ -52,7 +52,7 @@ secs = t_whole.duration
 ```
 
 
-## 2. You can also use it like a callable handler:
+### 2. You can also use it like a callable handler:
 
 ```python
 t_1 = about_time(func_1)
@@ -74,7 +74,7 @@ with about_time() as t_whole:
 ```
 
 
-## 3. And you can count and measure throughput:
+### 3. And you can count and measure throughput:
 
 Wrap your iterable and iterate it! Since it have duration, it can calculate the throughput of the whole block. Specially useful in generators, which do not have length, but you can use with any iterables:
 
@@ -89,7 +89,18 @@ for item in about_time(callback, items):
 ```
 
 
-## Humans are first class citizens :)
+## How do I install it?
+
+Just do in python env:
+
+```bash
+$ pip install about-time
+```
+
+
+## Some nice features
+
+### Humans are first class citizens :)
 
 I've considered two key concepts in designing the human friendly functions: `3.44s` is more meaningful than `3.43584783784s`, and `14.12us` is much nicer than `.0000141233333s`. So saying it another way, I round values to two decimal places at most, and finds the smaller unit to represent it, minimizing values smaller than `1`.
 
@@ -99,67 +110,39 @@ The `duration_human` changes seamlessly from nanoseconds to hours. Values smalle
 
 duration (float seconds) | duration_human
 :---: | :---:
-.00000000123 | '1.23ns'
 .00000000185 | '1.85ns'
-.000000001855 | '1.85ns'
-.0000000018551 | '1.86ns'
-.000001 | '1.0us'
 .000000999996 | '1.0us'
 .00001 | '10.0us'
 .0000156 | '15.6us'
 .01 | '10.0ms'
 .0141233333333 | '14.12ms'
-.0199999 | '20.0ms'
 .1099999 | '110.0ms'
 .1599999 | '160.0ms'
 .8015 | '801.5ms'
 3.434999 | '3.43s'
-3.435999 | '3.44s'
-59.99 | '59.99s'
 59.999 | '0:01:00'
-60.0 | '0:01:00'
 68.5 | '0:01:08.5'
-68.09 | '0:01:08.1'
-60.99 | '0:01:01'
 125.825 | '0:02:05.8'
 4488.395 | '1:14:48.4'
 
-The `throughput_human` has similar logic, yet trickier implementation. It shows per-second, per-minute and per-hour. Some examples:
+The `throughput_human` has similar logic, and to human brain it is much trickier to figure out: If it took `1165263` seconds to handle `123` items, how fast it did? Even dividing to find out the time per item `9473` seconds don't mean much. Dividing by `3600` we get `2.63` hours per item, and the throughput is returned nicely as `0.38/h`. The tool has per-second, per-minute and per-hour. Some examples:
 
 duration (float seconds) | number of elements | throughput_human
 :---: | :---: | :---:
-1. | 1 | '1.0/s'
-1. | 10 | '10.0/s'
-1. | 2500 | '2500.0/s'
-1. | 1825000 | '1825000.0/s'
-2. | 1 | '30.0/m'
-2. | 10 | '5.0/s'
-2. | 11 | '5.5/s'
+1\. | 10 | '10.0/s'
+1\. | 2500 | '2500.0/s'
+2\. | 1 | '30.0/m'
+2\. | 10 | '5.0/s'
 1.981981981981982 | 11 | '5.55/s'
-100. | 10 | '6.0/m'
-100. | 3 | '1.8/m'
-110. | 8 | '4.36/m'
-1600. | 3 | '6.75/h'
-67587655435. | 5432737542 | '4.82/m'
-67587655435. | 543273754 | '28.94/h'
-67587655435. | 543273754271 | '8.04/s'
+100\. | 10 | '6.0/m'
+1600\. | 3 | '6.75/h'
 .99 | 1 | '1.01/s'
-.999 | 1 | '1.0/s'
-1.00001 | 1 | '1.0/s'
-1.0001 | 1 | '59.99/m'
-1165263. | 123 | '0.38/h'
+1165263\. | 123 | '0.38/h'
 
 
-## Note
+### Accuracy
 
-In pythons >= `3.3`, the code uses the new `time.perf_counter` to gain from the higher resolution and smaller propagating of errors. In older versions, it uses `time.time`.
-
-
-# How do I install it?
-
-```bash
-$ pip install about-time
-```
+This tool supports all versions of python, but in pythons >= `3.3`, the code uses the new `time.perf_counter` to gain from the higher resolution and smaller propagating of errors. In older versions, it uses `time.time`.
 
 
 ## License
