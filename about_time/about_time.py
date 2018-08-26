@@ -79,10 +79,19 @@ class Handle(object):
     @property
     def duration_human(self):
         value = self.duration
-        if value < 60:
-            return '{}s'.format(int(value * 100) / 100.)
+        spec = (
+            (1.e-6, 1e9, 1e3, 'ns'),
+            (1.e-3, 1e6, 1e3, 'us'),
+            (1., 1e3, 1e3, 'ms'),
+            (60., 1e0, 60, 's'),
+        )
+        for top, mult, size, unit in spec:
+            if value < top:
+                result = round(value * mult, ndigits=2)
+                if result < size:
+                    return '{}{}'.format(result, unit)
 
-        txt = str(timedelta(seconds=int(value * 10) / 10.))
+        txt = str(timedelta(seconds=float('{:.1f}'.format(value))))
         pos = txt.find('.')
         if pos == -1:
             return txt
