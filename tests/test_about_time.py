@@ -54,14 +54,18 @@ def test_counter_throughput(it, expected, rand_offset):
     with mock.patch('time.perf_counter') as mt:
         mt.side_effect = (start, end)
 
-        it_see, it_copy = tee(it)
+        if expected:
+            it_see, it_copy = tee(it)
+        else:
+            it_see, it_copy = it, None
         for elem in about_time(callback, it_see):
             assert elem == next(it_copy)
 
-        callback.assert_called_once()
-        (h,), _ = callback.call_args
-        assert h.count == expected
-        assert h.throughput == pytest.approx(expected / 1.25)
+    callback.assert_called_once()
+    (h,), _ = callback.call_args
+    print(h)
+    assert h.count == expected
+    assert h.throughput == pytest.approx(expected / 1.25)
 
 
 @pytest.mark.parametrize('dont', [
@@ -78,6 +82,11 @@ def test_context_manager_dont_have_x(dont):
 def test_callable_handler_has_result():
     t = about_time(lambda: 1)
     assert t.result == 1
+
+
+def test_counter_throughput_must_have_fn():
+    with pytest.raises(UserWarning):
+        about_time(it=[])
 
 
 @pytest.mark.parametrize('dont', [
