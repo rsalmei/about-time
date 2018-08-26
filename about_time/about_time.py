@@ -5,10 +5,14 @@ import time
 from datetime import timedelta
 
 
-    """Measures the execution time of a block of code.
 def about_time(fn=None, it=None):
+    """Measures the execution time of a block of code, and even counts iterations
+    and the throughput of them, always with a beautiful "human" representation.
 
-    Use it like:
+    There's three modes of operation: context manager, callable handler and
+    iterator metrics.
+
+    1. Use it like a context manager:
 
     >>> with about_time() as t_whole:
     ....    with about_time() as t_1:
@@ -20,16 +24,33 @@ def about_time(fn=None, it=None):
     >>> print(f'func_2 time: {t_2.duration_human}')
     >>> print(f'total time: {t_whole.duration_human}')
 
-    You can also use it like:
+    The actual duration in seconds is available in:
+    >>> secs = t_whole.duration
 
-    >>> t = about_time(func_1)
-    >>> t = about_time(lambda: func_2('params'))
+    2. You can also use it like a callable handler:
+
+    >>> t_1 = about_time(func_1)
+    >>> t_2 = about_time(lambda: func_2('params'))
+
+    Use the field `result` to get the outcome of the function.
 
     Or you mix and match both:
 
     >>> with about_time() as t_whole:
     ....    t_1 = about_time(func_1)
     ....    t_2 = about_time(lambda: func_2('params'))
+
+    3. And you can count and, since we have duration, also measure the throughput
+    of an iterator block, specially useful in generators, which do not have length,
+    but you can use with any iterables:
+
+    >>> def callback(t_func):
+    ....    logger.info('func: size=%d throughput=%s', t_func.count,
+    ....                                               t_func.throughput_human)
+    >>> items = filter(...)
+    >>> for item in about_time(callback, items):
+    ....    # use item any way you want.
+    ....    pass
     """
 
     # has to be here to be mockable.
