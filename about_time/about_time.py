@@ -79,6 +79,9 @@ def about_time(fn=None, it=None):
         return HandleResult(timings, result)
 
     # use as counter/throughput iterator.
+    if not fn:
+        raise UserWarning('fn is required in counter mode')
+
     def counter():
         i = -1
         with context():
