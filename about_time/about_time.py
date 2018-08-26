@@ -106,3 +106,33 @@ class HandleResult(Handle):
     @property
     def result(self):
         return self.__result
+
+
+class HandleStats(Handle):
+    def __init__(self, timings, count):
+        super().__init__(timings)
+        self.__count = count
+
+    @property
+    def count(self):
+        return self.__count
+
+    @property
+    def throughput(self):
+        return self.count / self.duration
+
+    @property
+    def throughput_human(self):
+        value = self.throughput
+        spec = (
+            (1. / 60, 60 * 60, 60, '/h'),
+            (1., 60, 60, '/m'),
+        )
+        for top, mult, size, unit in spec:
+            if value < top:
+                result = round(value * mult, ndigits=2)
+                if result < size:
+                    return '{}{}'.format(result, unit)
+
+        result = round(value, ndigits=2)
+        return '{}{}'.format(result, '/s')
