@@ -68,12 +68,12 @@ def about_time(fn=None, it=None):
     timings = [0.0, 0.0]
     handle = Handle(timings)
 
-    # use as context manager.
-    if not (fn or it):
-        return context()
+    if it is None:
+        # use as context manager.
+        if fn is None:
+            return context()
 
-    # use as callable handler.
-    if not it:
+        # use as callable handler.
         with context():
             result = fn()
         return HandleResult(timings, result)
