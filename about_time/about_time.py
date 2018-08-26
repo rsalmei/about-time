@@ -87,3 +87,13 @@ class Handle(object):
         if pos == -1:
             return txt
         return txt[:pos + 2]
+
+
+class HandleResult(Handle):
+    def __init__(self, timings, result):
+        super().__init__(timings)
+        self.__result = result
+
+    @property
+    def result(self):
+        return self.__result
