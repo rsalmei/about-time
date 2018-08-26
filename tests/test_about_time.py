@@ -1,36 +1,78 @@
+import random
 from unittest import mock
 
 import pytest
+from itertools import tee
 
 from about_time import about_time
-from about_time.about_time import Handle
+from about_time.about_time import Handle, HandleStats
 
 
-@pytest.fixture(params=[True, False])
-def bool1(request):
+@pytest.fixture(params=[0, 1, 2])
+def mode(request):
     return request.param
 
 
-def test_timer_context_manager_and_callable_handler():
-    start, end = 1.4, 2.65
+@pytest.fixture
+def rand_offset():
+    return random.random() * 1000
+
+
+def test_timer_all_modes(mode, rand_offset):
+    start, end = 1.4 + rand_offset, 2.65 + rand_offset
     with mock.patch('time.perf_counter') as mt:
         mt.side_effect = (start, end)
 
-        if bool1:
-            with about_time() as t:
+        t = [None]
+        if mode == 0:
+            with about_time() as t[0]:
                 pass
+        elif mode == 1:
+            t[0] = about_time(lambda: 1)
         else:
-            t = about_time(lambda: 1)
+            def callback(h):
+                t[0] = h
 
-    assert t.duration == end - start
+            for _ in about_time(callback, range(2)):
+                pass
+
+    assert t[0].duration == pytest.approx(end - start)
 
 
-def test_context_manager_dont_have_result():
+@pytest.mark.parametrize('it, expected', [
+    ([], 0),
+    ([1, 2, 3], 3),
+    (range(0), 0),
+    (range(12), 12),
+    ('string', 6),
+    ((x ** 2 for x in range(8)), 8),
+])
+def test_counter_throughput(it, expected, rand_offset):
+    callback = mock.Mock()
+
+    start, end = 1.4 + rand_offset, 2.65 + rand_offset
+    with mock.patch('time.perf_counter') as mt:
+        mt.side_effect = (start, end)
+
+        it_see, it_copy = tee(it)
+        for elem in about_time(callback, it_see):
+            assert elem == next(it_copy)
+
+        callback.assert_called_once()
+        (h,), _ = callback.call_args
+        assert h.count == expected
+        assert h.throughput == pytest.approx(expected / 1.25)
+
+
+@pytest.mark.parametrize('dont', [
+    'result', 'count', 'throughput', 'throughput_human'
+])
+def test_context_manager_dont_have_x(dont):
     with about_time() as t:
         pass
 
     with pytest.raises(AttributeError):
-        x = t.result
+        getattr(t, dont)
 
 
 def test_callable_handler_has_result():
@@ -38,33 +80,71 @@ def test_callable_handler_has_result():
     assert t.result == 1
 
 
-@pytest.mark.parametrize('duration, expected', [
-    (.00001, '0.0s'),
-    (.01, '0.01s'),
-    (.014, '0.01s'),
-    (.015, '0.01s'),
-    (.0199999, '0.01s'),
-    (.1099999, '0.1s'),
-    (.1599999, '0.15s'),
-    (.8015, '0.8s'),
-    (3.434999, '3.43s'),
-    (59.99, '59.99s'),
-    (59.999, '59.99s'),
-    (60.0, '0:01:00'),
-    (68.09, '0:01:08'),
-    (60.9, '0:01:00.9'),
-    (60.99, '0:01:00.9'),
-    (125.825, '0:02:05.8'),
-    (4488.395, '1:14:48.3'),
+@pytest.mark.parametrize('dont', [
+    'count', 'throughput', 'throughput_human'
 ])
-def test_duration_precision(duration, expected, bool1):
-    with mock.patch.object(Handle, 'duration', new_callable=mock.PropertyMock) as md:
-        md.return_value = duration
+def test_callable_handler_dont_have_x(dont):
+    t = about_time(lambda: 1)
 
-        if bool1:
-            with about_time() as t:
-                pass
-        else:
-            t = about_time(lambda: 1)
+    with pytest.raises(AttributeError):
+        getattr(t, dont)
 
-        assert t.duration_human == expected
+
+@pytest.mark.parametrize('duration, expected', [
+    (.00000000123, '1.23ns'),
+    (.00000000185, '1.85ns'),
+    (.000000001855, '1.85ns'),
+    (.0000000018551, '1.86ns'),
+    (.000001, '1.0us'),
+    (.000000999996, '1.0us'),
+    (.00001, '10.0us'),
+    (.0000156, '15.6us'),
+    (.01, '10.0ms'),
+    (.0141233333333, '14.12ms'),
+    (.0199999, '20.0ms'),
+    (.1099999, '110.0ms'),
+    (.1599999, '160.0ms'),
+    (.8015, '801.5ms'),
+    (3.434999, '3.43s'),
+    (3.435999, '3.44s'),
+    (59.99, '59.99s'),
+    (59.999, '0:01:00'),
+    (60.0, '0:01:00'),
+    (68.5, '0:01:08.5'),
+    (68.09, '0:01:08.1'),
+    (60.99, '0:01:01'),
+    (125.825, '0:02:05.8'),
+    (4488.395, '1:14:48.4'),
+])
+def test_duration_human(duration, expected):
+    t = Handle([0., duration])
+
+    assert t.duration_human == expected
+
+
+@pytest.mark.parametrize('end, count, expected', [
+    (1., 1, '1.0/s'),
+    (1., 10, '10.0/s'),
+    (1., 2500, '2500.0/s'),
+    (1., 1825000, '1825000.0/s'),
+    (2., 1, '30.0/m'),
+    (2., 10, '5.0/s'),
+    (2., 11, '5.5/s'),
+    (1.981981981981982, 11, '5.55/s'),
+    (100., 10, '6.0/m'),
+    (100., 3, '1.8/m'),
+    (110., 8, '4.36/m'),
+    (1600., 3, '6.75/h'),
+    (67587655435., 5432737542, '4.82/m'),
+    (67587655435., 543273754, '28.94/h'),
+    (67587655435., 543273754271, '8.04/s'),
+    (.99, 1, '1.01/s'),
+    (.999, 1, '1.0/s'),
+    (1.00001, 1, '1.0/s'),
+    (1.0001, 1, '59.99/m'),
+    (1165263., 123, '0.38/h'),
+])
+def test_throughput_human(end, count, expected, rand_offset):
+    t = HandleStats([rand_offset, end + rand_offset], count)
+
+    assert t.throughput_human == expected
