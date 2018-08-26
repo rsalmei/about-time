@@ -5,8 +5,8 @@ import time
 from datetime import timedelta
 
 
-def about_time(fn=None):
     """Measures the execution time of a block of code.
+def about_time(fn=None, it=None):
 
     Use it like:
 
@@ -46,12 +46,26 @@ def about_time(fn=None):
 
     timings = [0.0, 0.0]
     handle = Handle(timings)
-    if not fn:
+
+    # use as context manager.
+    if not (fn or it):
         return context()
 
-    with context():
-        handle.result = fn()
-    return handle
+    # use as callable handler.
+    if not it:
+        with context():
+            result = fn()
+        return HandleResult(timings, result)
+
+    # use as counter/throughput iterator.
+    def counter():
+        i = -1
+        with context():
+            for i, elem in enumerate(it):
+                yield elem
+        fn(HandleStats(timings, i + 1))
+
+    return counter()
 
 
 class Handle(object):
