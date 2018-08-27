@@ -125,7 +125,7 @@ class Handle(object):
 
 class HandleResult(Handle):
     def __init__(self, timings, result):
-        super().__init__(timings)
+        super(HandleResult, self).__init__(timings)
         self.__result = result
 
     @property
@@ -135,7 +135,7 @@ class HandleResult(Handle):
 
 class HandleStats(Handle):
     def __init__(self, timings, count):
-        super().__init__(timings)
+        super(HandleStats, self).__init__(timings)
         self.__count = count
 
     @property
