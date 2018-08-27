@@ -22,23 +22,30 @@ def rand_offset():
     return random.random() * 1000
 
 
-def test_timer_all_modes(mode, rand_offset):
+@pytest.fixture
+def mock_timer():
+    import sys
+    use = 'perf_counter' if sys.version_info >= (3, 3) else 'time'
+    with mock.patch('time.{}'.format(use)) as mt:
+        yield mt
+
+
+def test_timer_all_modes(mode, rand_offset, mock_timer):
     start, end = 1.4 + rand_offset, 2.65 + rand_offset
-    with mock.patch('time.perf_counter') as mt:
-        mt.side_effect = (start, end)
+    mock_timer.side_effect = (start, end)
 
-        t = [None]
-        if mode == 0:
-            with about_time() as t[0]:
-                pass
-        elif mode == 1:
-            t[0] = about_time(lambda: 1)
-        else:
-            def callback(h):
-                t[0] = h
+    t = [None]
+    if mode == 0:
+        with about_time() as t[0]:
+            pass
+    elif mode == 1:
+        t[0] = about_time(lambda: 1)
+    else:
+        def callback(h):
+            t[0] = h
 
-            for _ in about_time(callback, range(2)):
-                pass
+        for _ in about_time(callback, range(2)):
+            pass
 
     assert t[0].duration == pytest.approx(end - start)
 
@@ -51,19 +58,18 @@ def test_timer_all_modes(mode, rand_offset):
     ('string', 6),
     ((x ** 2 for x in range(8)), 8),
 ])
-def test_counter_throughput(it, expected, rand_offset):
+def test_counter_throughput(it, expected, rand_offset, mock_timer):
     callback = mock.Mock()
 
     start, end = 1.4 + rand_offset, 2.65 + rand_offset
-    with mock.patch('time.perf_counter') as mt:
-        mt.side_effect = (start, end)
+    mock_timer.side_effect = (start, end)
 
-        if expected:
-            it_see, it_copy = tee(it)
-        else:
-            it_see, it_copy = it, None
-        for elem in about_time(callback, it_see):
-            assert elem == next(it_copy)
+    if expected:
+        it_see, it_copy = tee(it)
+    else:
+        it_see, it_copy = it, None
+    for elem in about_time(callback, it_see):
+        assert elem == next(it_copy)
 
     callback.assert_called_once()
     (h,), _ = callback.call_args
