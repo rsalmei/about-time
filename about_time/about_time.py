@@ -108,7 +108,7 @@ class Handle(object):
             (1.e-6, 1e9, 1e3, 'ns'),
             (1.e-3, 1e6, 1e3, 'us'),
             (1., 1e3, 1e3, 'ms'),
-            (60., 1e0, 60, 's'),
+            (60., 1e0, 60., 's'),
         )
         for top, mult, size, unit in spec:
             if value < top:
