@@ -15,14 +15,21 @@ There are several times where we need to instrument and log code execution, to s
 
 A simple `start = time.time()` and `end = time.time() - start` does not cut it when we want to track several lines at the same time, and/or whole blocks with line granularity.
 
-This tool measures the execution time of a block of code, and can now even count iterations
-and the throughput of them, always with a beautiful "human" representation.
+This tool measures the execution time of a block of code, and can now even count iterations and the throughput of them, always with a beautiful "human" representation.
+
+
+## How do I install it?
+
+Just do in your python venv:
+
+```bash
+$ pip install about-time
+```
 
 
 ## How to use it?
 
-There's three modes of operation: context manager, callable handler and
-iterator metrics.
+There's three modes of operation: context manager, callable handler and iterator metrics.
 
 
 ### 1. Use it like a context manager:
@@ -86,15 +93,6 @@ items = filter(...)
 for item in about_time(callback, items):
     # use item any way you want.
     pass
-```
-
-
-## How do I install it?
-
-Just do in python env:
-
-```bash
-$ pip install about-time
 ```
 
 
