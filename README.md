@@ -11,11 +11,11 @@
 
 ## What does it do?
 
-There are several times where we need to instrument and log code execution, to see where complex pipelines are spending the most time in.
+Sometimes I need something to log code execution, or to extract metrics to send to influx, so I've created this tool.
 
-A simple `start = time.time()` and `end = time.time() - start` does not cut it when we want to track several lines at the same time, and/or whole blocks with line granularity.
+A simple `start = time.time()` and `end = time.time() - start` does not cut it when you need to track two or more lines/blocks at the same time, or simultaneously whole/part relationship of blocks.
 
-This tool measures the execution time of a block of code, and can now even count iterations and the throughput of them, always with a beautiful "human" representation.
+This tool measures the execution time of blocks of code, and can even count iterations and the system throughput, with beautiful "human" representations.
 
 
 ## How do I install it?
@@ -47,6 +47,7 @@ with about_time() as t_whole:
 Then, get the timings like this:
 
 ```python
+# python 3.7 example, using f strings.
 print(f'func_1 time: {t_1.duration_human}')
 print(f'func_2 time: {t_2.duration_human}')
 print(f'total time: {t_whole.duration_human}')
@@ -59,7 +60,7 @@ secs = t_whole.duration
 ```
 
 
-### 2. You can also use it like a callable handler:
+### 2. Use it like a callable handler:
 
 ```python
 t_1 = about_time(func_1)
@@ -81,9 +82,11 @@ with about_time() as t_whole:
 ```
 
 
-### 3. And you can count and measure throughput:
+### 3. Use it to count iterations and measure throughput:
 
-Wrap your iterable and iterate it! Since it have duration, it can calculate the throughput of the whole block. Specially useful in generators, which do not have length, but you can use with any iterables:
+Wrap your iterable and just iterate it! Since we internally have duration information, it can calculate the throughput of the whole block. Specially useful in generators, which do not have length (but you can use it with any iterables):
+
+This mode requires a small callback function (which can be an inner function or a lambda) to allow you to use a `for` loop any way you want, and the callback will be called automatically when the iterable is exhausted.
 
 ```python
 def callback(t_func):
@@ -92,7 +95,9 @@ def callback(t_func):
 items = filter(...)
 for item in about_time(callback, items):
     # use item any way you want.
-    pass
+    process(item)
+
+# the callback is already called upon getting here.
 ```
 
 
