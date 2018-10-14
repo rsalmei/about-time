@@ -144,6 +144,9 @@ class HandleStats(Handle):
 
     @property
     def throughput(self):
+        if not self.duration:
+             # In case it was too fast to be measured
+            return float('NaN')
         return self.count / self.duration
 
     @property
