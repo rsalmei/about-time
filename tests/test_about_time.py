@@ -73,7 +73,6 @@ def test_counter_throughput(it, expected, rand_offset, mock_timer):
 
     callback.assert_called_once()
     (h,), _ = callback.call_args
-    print(h)
     assert h.count == expected
     assert h.throughput == pytest.approx(expected / 1.25)
 
@@ -142,10 +141,13 @@ def test_duration_human(duration, expected):
 
 
 @pytest.mark.parametrize('end, count, expected', [
+    (0., 1, '?'),
+    (1., 0, '-'),
     (1., 1, '1.0/s'),
     (1., 10, '10.0/s'),
     (1., 2500, '2500.0/s'),
     (1., 1825000, '1825000.0/s'),
+    (5.47945205e-07, 1, '1825000.0/s'),
     (2., 1, '30.0/m'),
     (2., 10, '5.0/s'),
     (2., 11, '5.5/s'),
@@ -161,9 +163,17 @@ def test_duration_human(duration, expected):
     (.999, 1, '1.0/s'),
     (1.00001, 1, '1.0/s'),
     (1.0001, 1, '59.99/m'),
-    (1165263., 123, '0.38/h'),
+    (1165263., 123, '9.12/d'),
+    (3600., 1, '1.0/h'),
+    (3601., 1, '23.99/d'),
+    (80000., 2, '2.16/d'),
 ])
 def test_throughput_human(end, count, expected, rand_offset):
     t = HandleStats([rand_offset, end + rand_offset], count)
 
     assert t.throughput_human == expected
+
+
+def test_counter_throughput_protect_against_inverted_params():
+    with pytest.raises(UserWarning):
+        about_time([], lambda x: 0)

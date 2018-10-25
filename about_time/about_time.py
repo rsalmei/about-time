@@ -80,8 +80,8 @@ def about_time(fn=None, it=None):
         return HandleResult(timings, result)
 
     # use as counter/throughput iterator.
-    if not fn:
-        raise UserWarning('fn is required in counter mode')
+    if fn is None or not callable(fn):  # handles inversion of parameters.
+        raise UserWarning('use as about_time(callback, iterable) in counter/throughput mode.')
 
     def counter():
         i = -1
@@ -94,6 +94,13 @@ def about_time(fn=None, it=None):
 
 
 class Handle(object):
+    DURATION_HUMAN_SPEC = (
+        (1.e-6, 1e9, 1e3, 'ns'),
+        (1.e-3, 1e6, 1e3, 'us'),
+        (1., 1e3, 1e3, 'ms'),
+        (60., 1e0, 60., 's'),
+    )
+
     def __init__(self, timings):
         self.__timings = timings
 
@@ -104,13 +111,7 @@ class Handle(object):
     @property
     def duration_human(self):
         value = self.duration
-        spec = (
-            (1.e-6, 1e9, 1e3, 'ns'),
-            (1.e-3, 1e6, 1e3, 'us'),
-            (1., 1e3, 1e3, 'ms'),
-            (60., 1e0, 60., 's'),
-        )
-        for top, mult, size, unit in spec:
+        for top, mult, size, unit in Handle.DURATION_HUMAN_SPEC:
             if value < top:
                 result = round(value * mult, ndigits=2)
                 if result < size:
@@ -134,6 +135,13 @@ class HandleResult(Handle):
 
 
 class HandleStats(Handle):
+    THROUGHPUT_HUMAN_SPEC = (
+        (1. / 60 / 24, 60 * 60 * 24, 24, '/d'),
+        (1. / 60, 60 * 60, 60, '/h'),
+        (1., 60, 60, '/m'),
+        (float('inf'), 1, float('inf'), '/s'),
+    )
+
     def __init__(self, timings, count):
         super(HandleStats, self).__init__(timings)
         self.__count = count
@@ -144,20 +152,20 @@ class HandleStats(Handle):
 
     @property
     def throughput(self):
-        return self.count / self.duration
+        try:
+            return self.__count / self.duration
+        except ZeroDivisionError:
+            return float('inf')
 
     @property
     def throughput_human(self):
+        if self.__count == 0:
+            return '-'
+
         value = self.throughput
-        spec = (
-            (1. / 60, 60 * 60, 60, '/h'),
-            (1., 60, 60, '/m'),
-        )
-        for top, mult, size, unit in spec:
+        for top, mult, size, unit in HandleStats.THROUGHPUT_HUMAN_SPEC:
             if value < top:
                 result = round(value * mult, ndigits=2)
                 if result < size:
                     return '{}{}'.format(result, unit)
-
-        result = round(value, ndigits=2)
-        return '{}{}'.format(result, '/s')
+        return '?'
