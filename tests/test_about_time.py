@@ -161,7 +161,8 @@ def test_duration_human(duration, expected):
     (.999, 1, '1.0/s'),
     (1.00001, 1, '1.0/s'),
     (1.0001, 1, '59.99/m'),
-    (1165263., 123, '0.38/h'),
+    (1165263., 123, '9.12/d'),
+    (80000., 2, '2.16/d'),
 ])
 def test_throughput_human(end, count, expected, rand_offset):
     t = HandleStats([rand_offset, end + rand_offset], count)

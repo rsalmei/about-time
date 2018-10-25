@@ -136,6 +136,7 @@ class HandleResult(Handle):
 
 class HandleStats(Handle):
     THROUGHPUT_HUMAN_SPEC = (
+        (1. / 60 / 24, 60 * 60 * 24, 24, '/d'),
         (1. / 60, 60 * 60, 60, '/h'),
         (1., 60, 60, '/m'),
         (float('inf'), 1, float('inf'), '/s'),
