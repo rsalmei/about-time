@@ -159,6 +159,9 @@ class HandleStats(Handle):
 
     @property
     def throughput_human(self):
+        if self.__count == 0:
+            return '-'
+
         value = self.throughput
         for top, mult, size, unit in HandleStats.THROUGHPUT_HUMAN_SPEC:
             if value < top:
