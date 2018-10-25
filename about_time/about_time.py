@@ -151,7 +151,7 @@ class HandleStats(Handle):
     @property
     def throughput(self):
         try:
-            return self.count / self.duration
+            return self.__count / self.duration
         except ZeroDivisionError:
             return float('inf')
 
