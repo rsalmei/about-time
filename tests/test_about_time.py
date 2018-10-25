@@ -73,7 +73,6 @@ def test_counter_throughput(it, expected, rand_offset, mock_timer):
 
     callback.assert_called_once()
     (h,), _ = callback.call_args
-    print(h)
     assert h.count == expected
     assert h.throughput == pytest.approx(expected / 1.25)
 
