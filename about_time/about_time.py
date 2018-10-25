@@ -138,6 +138,7 @@ class HandleStats(Handle):
     THROUGHPUT_HUMAN_SPEC = (
         (1. / 60, 60 * 60, 60, '/h'),
         (1., 60, 60, '/m'),
+        (float('inf'), 1, float('inf'), '/s'),
     )
 
     def __init__(self, timings, count):
@@ -163,6 +164,3 @@ class HandleStats(Handle):
                 result = round(value * mult, ndigits=2)
                 if result < size:
                     return '{}{}'.format(result, unit)
-
-        result = round(value, ndigits=2)
-        return '{}{}'.format(result, '/s')
