@@ -167,3 +167,8 @@ def test_throughput_human(end, count, expected, rand_offset):
     t = HandleStats([rand_offset, end + rand_offset], count)
 
     assert t.throughput_human == expected
+
+
+def test_counter_throughput_protect_against_inverted_params():
+    with pytest.raises(UserWarning):
+        about_time([], lambda x: 0)
