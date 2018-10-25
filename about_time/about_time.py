@@ -80,7 +80,7 @@ def about_time(fn=None, it=None):
         return HandleResult(timings, result)
 
     # use as counter/throughput iterator.
-    if not fn or not callable(fn):  # handles inversion of parameters.
+    if fn is None or not callable(fn):  # handles inversion of parameters.
         raise UserWarning('use as about_time(callback, iterable) in counter/throughput mode.')
 
     def counter():
