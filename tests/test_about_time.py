@@ -141,7 +141,7 @@ def test_duration_human(duration, expected):
 
 
 @pytest.mark.parametrize('end, count, expected', [
-    (0, 1, 'inf/s'),
+    (0., 1, '?'),
     (1., 0, '-'),
     (1., 1, '1.0/s'),
     (1., 10, '10.0/s'),

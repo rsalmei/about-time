@@ -168,3 +168,4 @@ class HandleStats(Handle):
                 result = round(value * mult, ndigits=2)
                 if result < size:
                     return '{}{}'.format(result, unit)
+        return '?'
