@@ -84,9 +84,9 @@ with about_time() as t_whole:
 
 ### 3. Use it to count iterations and measure throughput:
 
-Wrap your iterable and just iterate it! Since we internally have duration information, it can calculate the throughput of the whole block. Specially useful in generators, which do not have length (but you can use it with any iterables):
+Wrap your iterable and just iterate it! Since it internally have duration information, it can also calculate the throughput of the whole block. Specially useful in generators, which do not have length.
 
-This mode requires a small callback function (which can be an inner function or a lambda) to allow you to use a `for` loop any way you want, and the callback will be called automatically when the iterable is exhausted.
+This mode requires a function parameter to receive the timer object (which can be an inner function or a lambda), enabling you to use a `for` loop normally, and the callback will be called when the iterable is exhausted, with the timing information.
 
 ```python
 def callback(t_func):
