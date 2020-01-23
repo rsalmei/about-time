@@ -6,7 +6,7 @@
 
 
 # about-time
-## Small tool to track time of Python code blocks.
+## The missing Python framework to track timing of code blocks.
 
 
 ## What does it do?
