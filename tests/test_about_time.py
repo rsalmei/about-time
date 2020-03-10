@@ -9,7 +9,7 @@ import pytest
 from itertools import tee
 
 from about_time import about_time
-from about_time.about_time import Handle, HandleStats
+from about_time.core import Handle, HandleStats
 
 
 @pytest.fixture(params=[0, 1, 2])

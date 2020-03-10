@@ -7,4 +7,4 @@ __version__ = '.'.join(map(str, VERSION))
 
 __all__ = ('__author__', '__version__', 'about_time')
 
-from .about_time import about_time
+from .core import about_time
