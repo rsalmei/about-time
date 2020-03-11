@@ -4,6 +4,10 @@ import time
 from contextlib import contextmanager
 from datetime import timedelta
 
+if sys.version_info >= (3, 3):
+    timer = time.perf_counter
+else:  # pragma: no cover
+    timer = time.time
 
 def about_time(fn=None, it=None):
     """Measures the execution time of a block of code, and even counts iterations
@@ -52,12 +56,6 @@ def about_time(fn=None, it=None):
     ....    # use item any way you want.
     ....    pass
     """
-
-    # has to be here to be mockable.
-    if sys.version_info >= (3, 3):
-        timer = time.perf_counter
-    else:  # pragma: no cover
-        timer = time.time
 
     timings = [0.0, 0.0]
     handle = Handle(timings)
