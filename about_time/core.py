@@ -142,24 +142,48 @@ class HandleStats(Handle):
         (float('inf'), 1, float('inf'), '/s'),
     )
 
-    def __init__(self, timings, count):
+    def __init__(self, timings, it_closure):
         super(HandleStats, self).__init__(timings)
-        self.__count = count
+        self.__it = it_closure
+
+    def __iter__(self):
+        return self.__it()
 
     @property
     def count(self):
-        return self.__count
+        """Return the current iteration count.
+        This is dynamically updated in real time.
+
+        Returns:
+            int: the current iteration count.
+
+        """
+        return self.__it.count
 
     @property
     def throughput(self):
+        """Return the current throughput in items per second.
+        This is dynamically updated in real time.
+
+        Returns:
+            float: the number of items per second.
+
+        """
         try:
-            return self.__count / self.duration
+            return self.count / self.duration
         except ZeroDivisionError:
-            return float('inf')
+            return float('nan')
 
     @property
     def throughput_human(self):
-        if self.__count == 0:
+        """Return a beautiful representation of the current throughput.
+        It dynamically calculates the best unit to use.
+
+        Returns:
+            str: the duration representation.
+
+        """
+        if self.count == 0:
             return '-'
 
         value = self.throughput
