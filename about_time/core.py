@@ -9,12 +9,12 @@ if sys.version_info >= (3, 3):
 else:  # pragma: no cover
     timer = time.time
 
-def about_time(fn=None, it=None):
     """Measures the execution time of a block of code, and even counts iterations
     and the throughput of them, always with a beautiful "human" representation.
 
     There's three modes of operation: context manager, callable handler and
     iterator metrics.
+def about_time(func_or_it=None):
 
     1. Use it like a context manager:
 
@@ -58,30 +58,30 @@ def about_time(fn=None, it=None):
     """
 
     timings = [0.0, 0.0]
-    handle = Handle(timings)
 
-    if it is None:
-        # use as context manager.
-        if fn is None:
-            return context()
+    # use as a context manager.
+    if func_or_it is None:
+        return _context_timing(timings, Handle(timings))
 
-        # use as callable handler.
-        with context():
-            result = fn()
+    # use as a callable.
+    if callable(func_or_it):
+        with _context_timing(timings):
+            result = func_or_it()
         return HandleResult(timings, result)
 
-    # use as counter/throughput iterator.
-    if fn is None or not callable(fn):  # handles inversion of parameters.
-        raise UserWarning('use as about_time(callback, iterable) in counter/throughput mode.')
+    try:
+        it = iter(func_or_it)
+    except TypeError:
+        raise UserWarning('param should be callable or iterable.')
 
-    def counter():
-        i = -1
-        with context():
-            for i, elem in enumerate(it):
+    # use as a counter/throughput iterator.
+    def it_closure():
+        with _context_timing(timings):
+            for it_closure.count, elem in enumerate(it, 1):  # iterators are iterable.
                 yield elem
-        fn(HandleStats(timings, i + 1))
 
-    return counter()
+    it_closure.count = 0  # the count will only be updated after starting iterating.
+    return HandleStats(timings, it_closure)
 
 
 @contextmanager
