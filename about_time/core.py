@@ -9,52 +9,28 @@ if sys.version_info >= (3, 3):
 else:  # pragma: no cover
     timer = time.time
 
-    """Measures the execution time of a block of code, and even counts iterations
-    and the throughput of them, always with a beautiful "human" representation.
 
-    There's three modes of operation: context manager, callable handler and
-    iterator metrics.
 def about_time(func_or_it=None):
+    """Measure timing and throughput of code blocks, with beautiful
+    human friendly representations.
+
+    There's three modes of operation: context manager, callable and
+    throughput.
 
     1. Use it like a context manager:
 
-    >>> with about_time() as t_whole:
-    ....    with about_time() as t_1:
-    ....        func_1()
-    ....    with about_time() as t_2:
-    ....        func_2('params')
+    >>> with about_time() as at:
+    ....    # code block.
 
-    >>> print(f'func_1 time: {t_1.duration_human}')
-    >>> print(f'func_2 time: {t_2.duration_human}')
-    >>> print(f'total time: {t_whole.duration_human}')
+    2. Use it with a callable:
 
-    The actual duration in seconds is available in:
-    >>> secs = t_whole.duration
+    >>> at = about_time(func)
 
-    2. You can also use it like a callable handler:
+    3. Use it with an iterable or generator:
 
-    >>> t_1 = about_time(func_1)
-    >>> t_2 = about_time(lambda: func_2('params'))
-
-    Use the field `result` to get the outcome of the function.
-
-    Or you mix and match both:
-
-    >>> with about_time() as t_whole:
-    ....    t_1 = about_time(func_1)
-    ....    t_2 = about_time(lambda: func_2('params'))
-
-    3. And you can count and, since we have duration, also measure the throughput
-    of an iterator block, specially useful in generators, which do not have length,
-    but you can use with any iterables:
-
-    >>> def callback(t_func):
-    ....    logger.info('func: size=%d throughput=%s', t_func.count,
-    ....                                               t_func.throughput_human)
-    >>> items = filter(...)
-    >>> for item in about_time(callback, items):
-    ....    # use item any way you want.
-    ....    pass
+    >>> at = about_time(items)
+    >>> for item in at:
+    ....    # use item
     """
 
     timings = [0.0, 0.0]
@@ -104,10 +80,24 @@ class Handle(object):
 
     @property
     def duration(self):
+        """Return the actual duration in seconds.
+        This is dynamically updated in real time.
+
+        Returns:
+            float: the number of seconds.
+
+        """
         return (self.__timings[1] or timer()) - self.__timings[0]
 
     @property
     def duration_human(self):
+        """Return a beautiful representation of the duration.
+        It dynamically calculates the best unit to use.
+
+        Returns:
+            str: the duration representation.
+
+        """
         value = self.duration
         for top, mult, size, unit in Handle.DURATION_HUMAN_SPEC:
             if value < top:
@@ -129,6 +119,12 @@ class HandleResult(Handle):
 
     @property
     def result(self):
+        """Return the result of the callable.
+
+        Returns:
+            the result of the callable.
+
+        """
         return self.__result
 
 
