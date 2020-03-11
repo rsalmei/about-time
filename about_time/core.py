@@ -1,8 +1,7 @@
 # coding=utf-8
 import sys
-from contextlib import contextmanager
-
 import time
+from contextlib import contextmanager
 from datetime import timedelta
 
 
