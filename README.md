@@ -6,43 +6,58 @@
 
 
 # about-time
-## The missing Python framework to track timing of code blocks.
+## Easily measure timing and throughput of code blocks, with beautiful human friendly representations.
 
 
 ## What does it do?
 
-Did you ever need to:
-- log the duration of an operation;
-- extract time metrics to send to a log or to a time series database;
-- or even benchmark some refactoring?
+Did you ever need to log the duration of an operation? Yeah, this is easy, but:
+- log the duration of two or more operations at the same time, including the whole duration?
+- instrument a code to retrieve time metrics to send to a log or time series database?
+- easily see durations with units like *us* microseconds and *ms* milliseconds?
+- easily see the throughput of a bottleneck in items/second to benchmark a refactoring?
 
-Yes, normally a simple `start = time.time()` and `end = time.time() - start` would do it, but what if you need to track two or more blocks at the same time? Or simultaneously the whole duration **and** its constituent parts? 
+Yes, it can get kinda complex, and even while doable, it will for sure taint your code and make you lose focus.
 
-Behold!
+I have the solution, behold!
 
 ```python
 import time
 from about_time import about_time
 
-def func1():
-    time.sleep(.350)
+def func():
+    time.sleep(85e-3)
+    return True
 
-def func2():
-    time.sleep(.650)
+with about_time() as at1:
+    at2 = about_time(func)
 
-with about_time() as at:
-    at1 = about_time(func1)
-    at2 = about_time(func2)
+    at3 = about_time(x * 2 for x in range(5))
+    data = [x for x in at3]
+    
 
-print(at1.duration_human)  # prints "353.78ms"
-print(at2.duration_human)  # prints "654.36ms"
-print(at.duration_human)   # prints "1.01s"
+print('total:', at1.duration_human)
+print(' func:', at2.duration_human, '->', at2.result)
+print(' iter:', at3.duration_human, 'count:', at3.count, '@', at3.throughput_human, '->', data)
 ```
 
-How cool is that?
-I even smartly convert the duration to something readable! Instead of ".0000141233333s", you get `14.12us` which is much nicer! (of course the actual `duration` is available too)
+This prints:
+```
+total: 85.12ms
+ func: 85.04ms -> True
+ iter: 6.68us count: 5 @ 748614.98/s -> [0, 2, 4, 6, 8]
+```
 
-So, this tool measures the execution time of blocks of code, supports conversion to a beautiful human friendly representation, and can even count iterations and thus infer the system throughput!
+How cool is that? 😲
+
+It's much nicer to see `85.12ms` instead of this right?
+
+```
+In [7]: at1.duration
+Out[7]: 0.08511673200064251
+```
+
+So, `about_time` measures code blocks, both time and throughput, and converts to beautiful human friendly representations! 👏
 
 
 ## Install it
@@ -56,8 +71,7 @@ $ pip install about-time
 
 ## Use it
 
-There's three modes of operation: context manager, callable and counter. In the introduction you've 
-already seen context manager and callable.
+There's three modes of operation: context manager, callable and throughput. Let's dive in.
 
 
 ### 1. Use it like a context manager:
@@ -69,8 +83,11 @@ with about_time() as at:
     # the code to be measured...
 
 print('The whole block took:', at.duration_human)
-# you could also get the actual float in seconds with `at.duration`
 ```
+
+This way you can nicely wrap any amount of code.
+
+> In this mode, there are the basic fields `duration` and `duration_human`.
 
 
 ### 2. Use it with a callable:
@@ -80,66 +97,52 @@ from about_time import about_time
 
 at = about_time(some_func)
 
-print('The result is:', at.result, 'and took:', at.duration_human)
+print('The result was:', at.result, 'and took:', at.duration_human)
 ```
 
-In this mode, there will be a new field called `result` to get the outcome of the function!
+This way you have a one liner, and do not need to increase the indent of your code.
+
+> In this mode, there is the field `result`, in addition to the basic ones.
 
 
-### 3. Use it like a counter:
+### 3. Use it with an iterable or generator:
 
 ```python
 from about_time import about_time
 
-for item in about_time(func_result, iterable_or_generator):
-    # use item any way you want.
-    process(item)
+at = about_time(iterable)
+for item in at:
+    # process item.
+
+print('The whole block took:', at.duration_human)
+print('Total items processed:', at.count)
+print('Throughput:', at.throughput_human)
 ```
 
-So, just wrap your `iterable` and iterate as usual! Since it obviously have duration information, and now the number of iterations, it can also calculate the throughput of the whole block! Specially useful in generators, which do not have length.
+This way `about_time` can extract iterations info, and together with the duration info, calculates the throughput of the whole loop! Specially useful with generators, which do not have length.
 
-The `func_result` is any callable to receive the timer object (most normally will be an inner function), which will be called when the iterable is exhausted, bringing the timing information.
+> In this mode, there are the fields `count` and `throughput_human`, in addition to the basic ones.
 
-```python
-from about_time import about_time
+Note:
+- you can send even generator expressions, anything that is iterable to python!
+- you can consume not only in a `for` loop, but also in comprehensions, `map()`s, `filter()`s, `sum()`s, `max()`s, `list()`s, etc, thus any function that expects an iterator!
 
-def my_function():
-    def on_result(at):
-        print('func: size=%d throughput=%s', at.count, at.throughput_human)
-
-    for item in about_time(on_result, iterable_or_generator):
-        # use item any way you want.
-        process(item)
-
-    # when the items are exhausted, the `on_result` function will be called!
-```
-
-In this mode, there will be two new fields, called `count` and... Yes! There's also a `throughput_human`!
+> Cool tricks under the hood:
+> - the timer only triggers when the first element is queried, so you can initialize whatever you need before entering the loop!
+> - the `count` and `throughput_human` methods are updated in *real time*, so you can use them even inside the loop!
 
 
 ## Humans are first class citizens :)
 
 ### duration
 
-I've considered two key concepts in designing the human friendly functions: `3.44s` is more meaningful than `3.43584783784s`, and `14.12us` is much nicer than `.0000141233333s`. So saying it another way, I round values to two decimal places at most, and find the smaller unit to represent it, minimizing values smaller than `1`.
+I've considered two key concepts in designing the human friendly features: `3.44s` is more meaningful than `3.43584783784s`, and `14.12us` is much nicer than `.0000141233333s`. So what I do is: round values to at most two decimal places, and find the best scale unit to represent them, minimizing resulting values smaller than `1`.
 
-Note that it dynamically finds the best unit to represent the value, considering even the rounding been applied. So if a value is for example `0.999999`, it would end up like `1000.0ms` after rounded, but it is auto-upgraded to the next unit and you get `1.0s`!
+> The search for the best unit considers even the rounding been applied! So for example `0.999999` does not end up like `999.99us` (truncate) nor `1000.0us` (bad unit), but is auto-upgraded to the next unit `1.0ms`!
 
-The `duration_human` changes seamlessly from nanoseconds to hours. Values smaller than 60 seconds are rendered with two digits precision at most (zeros to the right of the decimal point are not shown), and starting from 1 minute, it changes to a "hours:minutes:seconds.M" milliseconds.
+The `duration_human` ranges seamlessly from nanoseconds to hours. Values smaller than 60 seconds are rendered with at most two decimal digits as "DDD.D[D]xs", and above 1 minute it changes to "hours:minutes:seconds.M".
 
 Much more humanly humm? ;)
-
-
-### throughput
-
-I've made the `throughput_human` with similar logic, because to the human brain it is much trickier to figure out! If something took `1165263` seconds to handle `123` items, how fast did it go? It's not obvious...
-Even dividing them to find out the time per item, we get `9473` seconds/item, which also don't mean much. 
-Dividing by `3600` we get `2.63` hours per item, which is much better, and the throughput that I calculate is returned nicely as `0.38/h`... Now we know how fast is that process!
-
-The tool has per-second, per-minute and per-hour calculations.
-
-
-### Some examples of conversions to human (directly from the unit tests):
 
 duration (float seconds) | duration_human
 :---: | :---:
@@ -159,6 +162,14 @@ duration (float seconds) | duration_human
 4488.395 | '1:14:48.4'
 
 
+### throughput
+
+I've made the `throughput_human` with a similar logic. It is funny how much trickier "throughput" is to the human brain! For example if something took "1165263 seconds" to handle "123 items", how fast did it go? It's not obvious...
+
+Even dividing the duration by the number of items, we get "9473 seconds/item", which also do not mean much. To make some sense of it we need to divide again by 3600 (seconds in an hour) to finally get "2.63 hours/item", which is much better. But throughput is the inverse of that (items/time), so `about_time` nicely returns it as `0.38/h`... Now we know how fast was that process!
+
+> `about_time` has per-second, per-minute and per-hour units.
+
 duration (float seconds) | number of elements | throughput_human
 :---: | :---: | :---:
 1\. | 10 | '10.0/s'
@@ -174,7 +185,13 @@ duration (float seconds) | number of elements | throughput_human
 
 ### Accuracy
 
-This tool supports all versions of python, but in pythons >= `3.3`, the code uses the new `time.perf_counter` to achieve much higher resolution and smaller propagating of errors. In older versions, it uses `time.time`.
+`about_time` supports all versions of python, but in pythons >= `3.3` it performs better with much higher resolution and smaller propagating of errors, thanks to the new `time.perf_counter`. In older versions, it uses `time.time` as usual.
+
+
+## Changelog highlights:
+- 3.0.0: greatly improved the counter/throughput mode, with a single argument and working in real time
+- 2.0.0: feature complete, addition of callable and throughput modes
+- 1.0.0: first public release, context manager mode
 
 
 ## License
