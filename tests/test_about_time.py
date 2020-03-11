@@ -1,4 +1,8 @@
+# coding=utf-8
 import random
+from datetime import datetime
+from decimal import Decimal
+from itertools import chain, repeat, tee
 
 try:
     from unittest import mock
@@ -6,15 +10,9 @@ except ImportError:
     import mock
 
 import pytest
-from itertools import tee
 
 from about_time import about_time
 from about_time.core import Handle, HandleStats
-
-
-@pytest.fixture(params=[0, 1, 2])
-def mode(request):
-    return request.param
 
 
 @pytest.fixture
@@ -24,88 +22,121 @@ def rand_offset():
 
 @pytest.fixture
 def mock_timer():
-    import sys
-    use = 'perf_counter' if sys.version_info >= (3, 3) else 'time'
-    with mock.patch('time.{}'.format(use)) as mt:
+    with mock.patch('about_time.core.timer') as mt:
         yield mt
 
 
-def test_timer_all_modes(mode, rand_offset, mock_timer):
+def test_duration_context_manager_mode(rand_offset, mock_timer):
     start, end = 1.4 + rand_offset, 2.65 + rand_offset
-    mock_timer.side_effect = (start, end)
+    mock_timer.side_effect = start, end
 
-    t = [None]
-    if mode == 0:
-        with about_time() as t[0]:
-            pass
-    elif mode == 1:
-        t[0] = about_time(lambda: 1)
-    else:
-        def callback(h):
-            t[0] = h
+    with about_time() as at:
+        pass
 
-        for _ in about_time(callback, range(2)):
-            pass
-
-    assert t[0].duration == pytest.approx(end - start)
+    assert at.duration == pytest.approx(end - start)
 
 
-@pytest.mark.parametrize('it, expected', [
-    ([], 0),
-    ([1, 2, 3], 3),
-    (range(0), 0),
-    (range(12), 12),
-    ('string', 6),
-    ((x ** 2 for x in range(8)), 8),
+def test_duration_callable_mode(rand_offset, mock_timer):
+    start, end = 1.4 + rand_offset, 2.65 + rand_offset
+    mock_timer.side_effect = start, end
+
+    at = about_time(lambda: 1)
+
+    assert at.duration == pytest.approx(end - start)
+
+
+def test_duration_counter_throughput_mode(rand_offset, mock_timer):
+    start, end = 1.4 + rand_offset, 2.65 + rand_offset
+    mock_timer.side_effect = start, end
+
+    at = about_time(range(2))
+    for _ in at:
+        pass
+
+    assert at.duration == pytest.approx(end - start)
+
+
+@pytest.mark.parametrize('call, expected', [
+    (lambda: 123, 123),
+    (str, ''),
+    (list, []),
 ])
-def test_counter_throughput(it, expected, rand_offset, mock_timer):
-    callback = mock.Mock()
+def test_callable_mode_result(call, expected):
+    at = about_time(call)
+    assert at.result == expected
 
+
+@pytest.mark.parametrize('it', [
+    [],
+    [1, 2, 3],
+    range(0),
+    range(12),
+    'string',
+    (x ** 2 for x in range(8)),
+])
+def test_counter_throughput_mode(it, rand_offset, mock_timer):
     start, end = 1.4 + rand_offset, 2.65 + rand_offset
-    mock_timer.side_effect = (start, end)
+    mock_timer.side_effect = chain((start,), repeat(end))
+    it_see, it_copy = tee(it)
 
-    if expected:
-        it_see, it_copy = tee(it)
-    else:
-        it_see, it_copy = it, None
-    for elem in about_time(callback, it_see):
+    at = about_time(it_see)
+    assert at.count == 0  # count should work even before starting iterating.
+
+    i = 0
+    for i, elem in enumerate(at, 1):
         assert elem == next(it_copy)
+        assert at.count == i  # count works in real time now!
+        assert at.duration > 0  # ensure the timing ending is also updated in real time.
 
-    callback.assert_called_once()
-    (h,), _ = callback.call_args
-    assert h.count == expected
-    assert h.throughput == pytest.approx(expected / 1.25)
+    assert at.throughput == pytest.approx(i / 1.25)
 
 
-@pytest.mark.parametrize('dont', [
-    'result', 'count', 'throughput', 'throughput_human'
+@pytest.mark.parametrize('field', [
+    'result',
+    'count',
+    'throughput',
+    'throughput_human',
 ])
-def test_context_manager_dont_have_x(dont):
-    with about_time() as t:
+def test_context_manager_mode_dont_have_field(field):
+    with about_time() as at:
         pass
 
     with pytest.raises(AttributeError):
-        getattr(t, dont)
+        getattr(at, field)
 
 
-def test_callable_handler_has_result():
-    t = about_time(lambda: 1)
-    assert t.result == 1
-
-
-def test_counter_throughput_must_have_fn():
-    with pytest.raises(UserWarning):
-        about_time(it=[])
-
-
-@pytest.mark.parametrize('dont', [
-    'count', 'throughput', 'throughput_human'
+@pytest.mark.parametrize('field', [
+    'count',
+    'throughput',
+    'throughput_human',
 ])
-def test_callable_handler_dont_have_x(dont):
-    t = about_time(lambda: 1)
+def test_callable_mode_dont_have_field(field):
+    at = about_time(lambda: 1)
 
     with pytest.raises(AttributeError):
-        getattr(t, dont)
+        getattr(at, field)
+
+
+@pytest.mark.parametrize('field', [
+    'result',
+])
+def test_counter_throughput_mode_dont_have_field(field):
+    at = about_time(range(2))
+
+    with pytest.raises(AttributeError):
+        getattr(at, field)
+
+
+@pytest.mark.parametrize('value', [
+    123,
+    .1,
+    object(),
+    datetime.now(),
+    Decimal(),
+])
+def test_wrong_params_must_complain(value):
+    with pytest.raises(UserWarning):
+        about_time(value)
 
 
 @pytest.mark.parametrize('duration, expected', [
@@ -135,9 +166,9 @@ def test_callable_handler_dont_have_x(dont):
     (4488.395, '1:14:48.4'),
 ])
 def test_duration_human(duration, expected):
-    t = Handle([0., duration])
+    h = Handle([0., duration])
 
-    assert t.duration_human == expected
+    assert h.duration_human == expected
 
 
 @pytest.mark.parametrize('end, count, expected', [
@@ -169,11 +200,10 @@ def test_duration_human(duration, expected):
     (80000., 2, '2.16/d'),
 ])
 def test_throughput_human(end, count, expected, rand_offset):
-    t = HandleStats([rand_offset, end + rand_offset], count)
+    def it_closure():
+        pass
 
-    assert t.throughput_human == expected
+    it_closure.count = count
+    h = HandleStats([rand_offset, end + rand_offset], it_closure)
 
-
-def test_counter_throughput_protect_against_inverted_params():
-    with pytest.raises(UserWarning):
-        about_time([], lambda x: 0)
+    assert h.throughput_human == expected
