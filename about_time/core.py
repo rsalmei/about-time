@@ -60,12 +60,6 @@ def about_time(fn=None, it=None):
     else:  # pragma: no cover
         timer = time.time
 
-    @contextmanager
-    def context():
-        timings[0] = timer()
-        yield handle
-        timings[1] = timer()
-
     timings = [0.0, 0.0]
     handle = Handle(timings)
 
@@ -91,6 +85,13 @@ def about_time(fn=None, it=None):
         fn(HandleStats(timings, i + 1))
 
     return counter()
+
+
+@contextmanager
+def _context_timing(timings, handle=None):
+    timings[0] = timer()
+    yield handle
+    timings[1] = timer()
 
 
 class Handle(object):
