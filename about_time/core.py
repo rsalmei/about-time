@@ -104,7 +104,7 @@ class Handle(object):
 
     @property
     def duration(self):
-        return self.__timings[1] - self.__timings[0]
+        return (self.__timings[1] or timer()) - self.__timings[0]
 
     @property
     def duration_human(self):
