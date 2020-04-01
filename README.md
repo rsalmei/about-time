@@ -1,14 +1,14 @@
+[<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
+
+# about-time
+#### Easily measure timing and throughput of code blocks, with beautiful human friendly representations.
+
 [![Coverage](https://img.shields.io/badge/coverage-100%25-green.svg)]()
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/rsalmei/about-time/graphs/commit-activity)
 [![PyPI version](https://img.shields.io/pypi/v/about-time.svg)](https://pypi.python.org/pypi/about-time/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/about-time.svg)](https://pypi.python.org/pypi/about-time/)
 [![PyPI status](https://img.shields.io/pypi/status/about-time.svg)](https://pypi.python.org/pypi/about-time/)
-
-[<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
-
-# about-time
-## Easily measure timing and throughput of code blocks, with beautiful human friendly representations.
-
+[![PyPI downloads](https://img.shields.io/pypi/dm/alive-progress.svg)](https://pypi.python.org/pypi/about-time/)
 
 ## What does it do?
 
