@@ -1,11 +1,11 @@
 # coding=utf-8
-VERSION = (3, 0, 0)
 from __future__ import absolute_import, division, unicode_literals
 
 import sys
 
 from .core import about_time
 
+VERSION = (3, 1, 0)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'
