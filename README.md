@@ -154,7 +154,7 @@ Note:
 
 I've considered two key concepts in designing the human friendly features: `3.44s` is more meaningful than `3.43584783784s`, and `14.12us` is much nicer than `.0000141233333s`. So what I do is: round values to at most two decimal places, and find the best scale unit to represent them, minimizing resulting values smaller than `1`.
 
-> The search for the best unit considers even the rounding been applied! So for example `0.999999` does not end up like `999.99us` (truncate) nor `1000.0us` (bad unit), but is auto-upgraded to the next unit `1.0ms`!
+> The search for the best unit considers even the rounding been applied! So for example `0.000999999` does not end up as `999.99us` (truncate) nor `1000.0us` (bad unit), but is auto-upgraded to the next unit `1.0ms`!
 
 The `duration_human` ranges seamlessly from nanoseconds to hours. Values smaller than 60 seconds are rendered with at most two decimal digits as "DDD.D[D]xs", and above 1 minute it changes to "hours:minutes:seconds.M".
 
