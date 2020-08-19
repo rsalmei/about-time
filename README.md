@@ -105,6 +105,21 @@ This way you have a one liner, and do not need to increase the indent of your co
 
 > In this mode, there is the field `result`, in addition to the basic ones.
 
+If your function have params, you can use a `lambda` or (📌 new) simply send them:
+
+```python
+from about_time import about_time
+
+def add(number):
+    return number + 1
+
+at = about_time(add, 42)
+# or even:
+at = about_time(add, number=42)
+
+print('The result was:', at.result, 'and took:', at.duration_human)
+```
+
 
 ### 3. Use it with an iterable or generator:
 
