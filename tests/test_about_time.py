@@ -1,4 +1,6 @@
 # coding=utf-8
+from __future__ import absolute_import, division, unicode_literals
+
 import random
 from datetime import datetime
 from decimal import Decimal
@@ -56,13 +58,17 @@ def test_duration_counter_throughput_mode(rand_offset, mock_timer):
     assert at.duration == pytest.approx(end - start)
 
 
-@pytest.mark.parametrize('call, expected', [
-    (lambda: 123, 123),
-    (str, ''),
-    (list, []),
+@pytest.mark.parametrize('call, args, kwargs, expected', [
+    (lambda: 123, (), {}, 123),
+    (str, (), {}, ''),
+    (list, (), {}, []),
+    (lambda x: x + 1, (123,), {}, 124),
+    (str, ('cool',), {}, 'cool'),
+    (list, ((1, 2, 3),), {}, [1, 2, 3]),
+    (lambda x: x + 1, (), {'x': 123}, 124),
 ])
-def test_callable_mode_result(call, expected):
-    at = about_time(call)
+def test_callable_mode_result(call, args, kwargs, expected):
+    at = about_time(call, *args, **kwargs)
     assert at.result == expected
 
 

@@ -1,7 +1,4 @@
-mock
+mock; python_version < '3'
 pytest
-pytest-cache
 pytest-cov
 pytest-sugar
-pytest-watch
-pytest-xdist

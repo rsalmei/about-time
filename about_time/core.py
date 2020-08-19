@@ -1,4 +1,6 @@
 # coding=utf-8
+from __future__ import absolute_import, division, unicode_literals
+
 import sys
 import time
 from contextlib import contextmanager
@@ -10,11 +12,11 @@ else:  # pragma: no cover
     timer = time.time
 
 
-def about_time(func_or_it=None):
+def about_time(func_or_it=None, *args, **kwargs):
     """Measure timing and throughput of code blocks, with beautiful
     human friendly representations.
 
-    There's three modes of operation: context manager, callable and
+    There're three modes of operation: context manager, callable and
     throughput.
 
     1. Use it like a context manager:
@@ -24,7 +26,7 @@ def about_time(func_or_it=None):
 
     2. Use it with a callable:
 
-    >>> at = about_time(func)
+    >>> at = about_time(func, arg1, kwarg2=arg2)  # send arguments at will.
 
     3. Use it with an iterable or generator:
 
@@ -42,7 +44,7 @@ def about_time(func_or_it=None):
     # use as a callable.
     if callable(func_or_it):
         with _context_timing(timings):
-            result = func_or_it()
+            result = func_or_it(*args, **kwargs)
         return HandleResult(timings, result)
 
     try:

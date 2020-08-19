@@ -8,7 +8,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/about-time.svg)](https://pypi.python.org/pypi/about-time/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/about-time.svg)](https://pypi.python.org/pypi/about-time/)
 [![PyPI status](https://img.shields.io/pypi/status/about-time.svg)](https://pypi.python.org/pypi/about-time/)
-[![PyPI downloads](https://img.shields.io/pypi/dm/alive-progress.svg)](https://pypi.python.org/pypi/about-time/)
+[![PyPI Downloads](https://pepy.tech/badge/about-time)](https://pepy.tech/project/about-time)
 
 ## What does it do?
 
@@ -105,6 +105,21 @@ This way you have a one liner, and do not need to increase the indent of your co
 
 > In this mode, there is the field `result`, in addition to the basic ones.
 
+If your function have params, you can use a `lambda` or (📌 new) simply send them:
+
+```python
+from about_time import about_time
+
+def add(number):
+    return number + 1
+
+at = about_time(add, 42)
+# or even:
+at = about_time(add, number=42)
+
+print('The result was:', at.result, 'and took:', at.duration_human)
+```
+
 
 ### 3. Use it with an iterable or generator:
 
@@ -190,6 +205,7 @@ duration (float seconds) | number of elements | throughput_human
 
 
 ## Changelog highlights:
+- 3.1.0: include support for parameters in callable mode; official support for python 3.8, 3.9 and 3.10
 - 3.0.0: greatly improved the counter/throughput mode, with a single argument and working in real time
 - 2.0.0: feature complete, addition of callable and throughput modes
 - 1.0.0: first public release, context manager mode
