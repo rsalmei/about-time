@@ -1,7 +1,7 @@
 [<img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" width="217px" height="51x">](https://www.buymeacoffee.com/rsalmei)
 
 # about-time
-#### Easily measure timing and throughput of code blocks, with beautiful human friendly representations.
+### A cool helper for tracking time and throughput of code blocks, with beautiful human friendly renditions.
 
 [![Coverage](https://img.shields.io/badge/coverage-100%25-green.svg)]()
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/rsalmei/about-time/graphs/commit-activity)
