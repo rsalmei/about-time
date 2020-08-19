@@ -1,3 +1,4 @@
 ipython
 pdbpp
 twine
+wheel
