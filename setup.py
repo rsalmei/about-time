@@ -52,5 +52,6 @@ setup(
     ],
     keywords='python track tracker time code blocks statistics analytics'.split(),
     packages=find_packages(),
+    data_files=[('', ['LICENSE'])],
     install_requires=[],
 )
