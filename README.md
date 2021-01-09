@@ -12,58 +12,64 @@
 
 ## What does it do?
 
-Did you ever need to log the duration of an operation? Yeah, this is easy, but:
-- log the duration of two or more operations at the same time, including the whole duration?
-- instrument a code to retrieve time metrics to send to a log or time series database?
-- easily see durations with units like *us* microseconds and *ms* milliseconds?
-- easily see the throughput of a bottleneck in items/second to benchmark a refactoring?
+Did you ever need to measure the duration of an operation? Yeah, this is easy.
 
-Yes, it can get kinda complex, and even while doable, it will for sure taint your code and make you lose focus.
+But how to:
+- measure the duration of two or more blocks at the same time, including the whole duration?
+- instrument a code to cleanly retrieve duration in one line, to log or send to a time series database?
+- easily see human friendly durations with units like *ms* (milliseconds), *us* (microseconds) and even *ns* (nanoseconds)?
+- measure the throughput of a block? it is way harder, as it needs to measure both duration and iterations!
+- easily see human friendly throughputs in "per second", "per minute", "per hour" or even "per day"?
+
+Yes, it can get complex! And even while one could do it, it would probably get messy and pollute the code being instrumented.
 
 I have the solution, behold!
 
 ```python
-import time
 from about_time import about_time
 
-def func():
+
+def some_func():
+    import time
     time.sleep(85e-3)
     return True
 
-with about_time() as at1:
-    at2 = about_time(func)
 
-    at3 = about_time(x * 2 for x in range(5))
-    data = [x for x in at3]
-    
+def main():
+    with about_time() as at1:  # <-- use it like a context manager!
 
-print('total:', at1.duration_human)
-print(' func:', at2.duration_human, '->', at2.result)
-print(' iter:', at3.duration_human, 'count:', at3.count, '@', at3.throughput_human, '->', data)
+        at2 = about_time(some_func)  # <-- use it with any callable!!
+
+        at3 = about_time(x * 2 for x in range(5))  # <-- use it with any iterable or generator!!!
+        data = [x for x in at3]  # then just iterate!
+
+    print(f'total: {at1.duration_human}')
+    print(f'  some_func: {at2.duration_human} -> result: {at2.result}')
+    print(f'  generator: {at3.duration_human} -> {at3.count} elements, throughput: {at3.throughput_human}, result: {data}')
 ```
 
-This prints:
+This `main()` function prints:
 ```
 total: 85.12ms
- func: 85.04ms -> True
- iter: 6.68us count: 5 @ 748614.98/s -> [0, 2, 4, 6, 8]
+  some_func: 85.04ms -> result: True
+  generator: 6.68us -> 5 elements, throughput: 748614.98/s, result: [0, 2, 4, 6, 8]
 ```
 
-How cool is that? 😲
+How cool is that? 😲👏
 
-It's much nicer to see `85.12ms` instead of this right?
-
+You can also get the duration in seconds if needed:
 ```
 In [7]: at1.duration
 Out[7]: 0.08511673200064251
 ```
+But `85.12ms` is way better, isn't it?
 
 So, `about_time` measures code blocks, both time and throughput, and converts to beautiful human friendly representations! 👏
 
 
-## Install it
+## Get it
 
-Just do in your python venv:
+Just install with pip:
 
 ```bash
 $ pip install about-time
@@ -72,7 +78,7 @@ $ pip install about-time
 
 ## Use it
 
-There's three modes of operation: context manager, callable and throughput. Let's dive in.
+There're three modes of operation: context manager, callable and throughput. Let's dive in.
 
 
 ### 1. Use it like a context manager:
@@ -82,8 +88,9 @@ from about_time import about_time
 
 with about_time() as at:
     # the code to be measured...
+    # any lenghty block.
 
-print('The whole block took:', at.duration_human)
+print(f'The whole block took: {at.duration_human}')
 ```
 
 This way you can nicely wrap any amount of code.
@@ -91,37 +98,38 @@ This way you can nicely wrap any amount of code.
 > In this mode, there are the basic fields `duration` and `duration_human`.
 
 
-### 2. Use it with a callable:
+### 2. Use it with any callable:
 
 ```python
 from about_time import about_time
 
 at = about_time(some_func)
 
-print('The result was:', at.result, 'and took:', at.duration_human)
+print(f'The whole block took: {at.duration_human}')
+print(f'And the result was: {at.result}')
+
 ```
 
-This way you have a one liner, and do not need to increase the indent of your code.
+This way you have a nice one liner, and do not need to increase the indent of your code.
 
-> In this mode, there is the field `result`, in addition to the basic ones.
+> In this mode, there is an additional field `result`, with the return of the callable.
 
-If your function have params, you can use a `lambda` or (📌 new) simply send them:
+If the callable have params, you can use a `lambda` or (📌 new) simply send them:
 
 ```python
-from about_time import about_time
+def add(n, m):
+    return n + m
 
-def add(number):
-    return number + 1
-
-at = about_time(add, 42)
+at = about_time(add, 1, 41)
+# or:
+at = about_time(add, n=1, m=41)
 # or even:
-at = about_time(add, number=42)
+at = about_time(lambda: add(1, 41))
 
-print('The result was:', at.result, 'and took:', at.duration_human)
 ```
 
 
-### 3. Use it with an iterable or generator:
+### 3. Use it with any iterable or generator:
 
 ```python
 from about_time import about_time
@@ -130,36 +138,43 @@ at = about_time(iterable)
 for item in at:
     # process item.
 
-print('The whole block took:', at.duration_human)
-print('Total items processed:', at.count)
-print('Throughput:', at.throughput_human)
+print(f'The whole block took: {at.duration_human}')
+print(f'It was detected {at.count} elements')
+print(f'The throughput was: {at.throughput_human}')
 ```
 
-This way `about_time` can extract iterations info, and together with the duration info, calculates the throughput of the whole loop! Specially useful with generators, which do not have length.
+This way `about_time` also extracts the number of iterations, and with the measured duration it calculates the throughput of the whole loop! Specially useful with generators, which do not have length.
 
-> In this mode, there are the fields `count` and `throughput_human`, in addition to the basic ones.
+> In this mode, there are the additional fields `count`, `throughput` and `throughput_human`, which should be self-descriptive at this point.
 
-Note:
-- you can send even generator expressions, anything that is iterable to python!
-- you can consume not only in a `for` loop, but also in comprehensions, `map()`s, `filter()`s, `sum()`s, `max()`s, `list()`s, etc, thus any function that expects an iterator!
-
-> Cool tricks under the hood:
-> - the timer only triggers when the first element is queried, so you can initialize whatever you need before entering the loop!
-> - the `count` and `throughput_human` methods are updated in *real time*, so you can use them even inside the loop!
+Cool tricks under the hood:
+- you can use it even with generator expressions, anything that is iterable to python!
+- you can consume it not only in a `for` loop, but also in {list|dict|set} comprehensions, `map()`s, `filter()`s, `sum()`s, `max()`s, `list()`s, etc, thus any function that expects an iterator! 👏
+- the timer only starts when the first element is queried, so you can initialize whatever you need before entering the loop! 👏
+- the `count` and `throughput`/`throughput_human` fields are updated in **real time**, so you can use them even inside the loop!
 
 
-## Humans are first class citizens :)
+## Accuracy
 
-### duration
+`about_time` supports all versions of python, but in pythons >= `3.3` it performs even better, with much higher resolution and smaller propagation of errors, thanks to the new `time.perf_counter`. In older versions, it uses `time.time` as usual.
 
-I've considered two key concepts in designing the human friendly features: `3.44s` is more meaningful than `3.43584783784s`, and `14.12us` is much nicer than `.0000141233333s`. So what I do is: round values to at most two decimal places, and find the best scale unit to represent them, minimizing resulting values smaller than `1`.
 
-> The search for the best unit considers even the rounding been applied! So for example `0.000999999` does not end up as `999.99us` (truncate) nor `1000.0us` (bad unit), but is auto-upgraded to the next unit `1.0ms`!
+<details>
+<summary><strong><em>Want to know more about the duration human magic?</em></strong></summary>
 
-The `duration_human` ranges seamlessly from nanoseconds to hours. Values smaller than 60 seconds are rendered with at most two decimal digits as "DDD.D[D]xs", and above 1 minute it changes to "hours:minutes:seconds.M".
+I've used just one key concept in designing the duration human features: cleanliness.
+> `3.44s` is more meaningful than `3.43584783784s`, and `14.12us` is much nicer than `.0000141233333s`.
 
-Much more humanly humm? ;)
+So what I do is: round values to at most two decimal places, and find the best scale unit to represent them, minimizing resulting values smaller than `1`. The search for the best unit considers even the rounding been applied!
+> `0.000999999` does not end up as `999.99us` (truncate) nor `1000.0us` (bad unit), but is auto-upgraded to the next unit `1.0ms`!
 
+The `duration_human` units change seamlessly from nanoseconds to hours.
+  - values smaller than 60 seconds are always rendered as "num.D[D]unit", with one or two decimals;
+  - from 1 minute onward it changes to "H:MM:SS[.m]".
+
+It feels much more humanly humm? ;)
+
+Some examples:
 duration (float seconds) | duration_human
 :---: | :---:
 .00000000185 | '1.85ns'
@@ -176,15 +191,22 @@ duration (float seconds) | duration_human
 68.5 | '0:01:08.5'
 125.825 | '0:02:05.8'
 4488.395 | '1:14:48.4'
+---
+</details>
 
 
-### throughput
+<details>
+<summary><strong><em>Or about the throughput human one?</em></strong></summary>
 
-I've made the `throughput_human` with a similar logic. It is funny how much trickier "throughput" is to the human brain! For example if something took "1165263 seconds" to handle "123 items", how fast did it go? It's not obvious...
+I've made the `throughput_human` with a similar logic. It is funny how much trickier "throughput" is to the human brain!
+> If something took `1165263 seconds` to handle `123 items`, how fast did it go? It's not obvious...
 
-Even dividing the duration by the number of items, we get "9473 seconds/item", which also do not mean much. To make some sense of it we need to divide again by 3600 (seconds in an hour) to finally get "2.63 hours/item", which is much better. But throughput is the inverse of that (items/time), so `about_time` nicely returns it as `0.38/h`... Now we know how fast was that process!
+Even dividing the duration by the number of items, we get `9473 seconds/item`, which also does not mean much. How fast it that? We can't say. How many do we do per time?
+> Oh we just need to invert it, so `0.000105555569858 items/second`, there it is! 😂
 
-> `about_time` has per-second, per-minute and per-hour units.
+To make some sense of it we need to multiply that by 3600 (seconds in an hour) to finally get `0.38/h`, which is much better! Now we know how fast that process was!
+
+The `throughput_human` unit changes seamlessly from per-second, per-minute, per-hour and even per-day.
 
 duration (float seconds) | number of elements | throughput_human
 :---: | :---: | :---:
@@ -197,11 +219,8 @@ duration (float seconds) | number of elements | throughput_human
 1600\. | 3 | '6.75/h'
 .99 | 1 | '1.01/s'
 1165263\. | 123 | '0.38/h'
-
-
-### Accuracy
-
-`about_time` supports all versions of python, but in pythons >= `3.3` it performs better with much higher resolution and smaller propagating of errors, thanks to the new `time.perf_counter`. In older versions, it uses `time.time` as usual.
+---
+</details>
 
 
 ## Changelog highlights:
@@ -215,9 +234,9 @@ duration (float seconds) | number of elements | throughput_human
 This software is licensed under the MIT License. See the LICENSE file in the top distribution directory for the full license text.
 
 
-## Nice huh?
+## Did you like it?
 
 Thank you for your interest!
 
 I've put much ❤️ and effort into this.
-<br>If you appreciate my work you can sponsor me, buy me a coffee! The button is on the top right of the page (the big orange one, it's hard to miss 😊)
+<br>If you've appreciated my work and would like me to continue improving it, you can donate me a beer or a coffee! I would really appreciate that 😊! (the button is on the top-right corner) Thank you!
