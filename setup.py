@@ -48,9 +48,9 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
-        # 'Programming Language :: Python :: 3.10',  # invalid in PyPI yet.
+        'Programming Language :: Python :: 3.10',
     ],
-    keywords='python track tracker time code blocks statistics analytics'.split(),
+    keywords='python track tracker time code blocks monitor statistics analytics'.split(),
     packages=find_packages(),
     data_files=[('', ['LICENSE'])],
     install_requires=[],

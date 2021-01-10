@@ -224,6 +224,7 @@ duration (float seconds) | number of elements | throughput_human
 
 
 ## Changelog highlights:
+- 3.1.1: make `duration_human()` and `throughput_human()` available for external use
 - 3.1.0: include support for parameters in callable mode; official support for python 3.8, 3.9 and 3.10
 - 3.0.0: greatly improved the counter/throughput mode, with a single argument and working in real time
 - 2.0.0: feature complete, addition of callable and throughput modes

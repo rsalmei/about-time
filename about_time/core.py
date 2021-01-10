@@ -4,7 +4,8 @@ from __future__ import absolute_import, division, unicode_literals
 import sys
 import time
 from contextlib import contextmanager
-from datetime import timedelta
+
+from . import human
 
 if sys.version_info >= (3, 3):
     timer = time.perf_counter
@@ -70,13 +71,6 @@ def _context_timing(timings, handle=None):
 
 
 class Handle(object):
-    DURATION_HUMAN_SPEC = (
-        (1.e-6, 1e9, 1e3, 'ns'),
-        (1.e-3, 1e6, 1e3, 'us'),
-        (1., 1e3, 1e3, 'ms'),
-        (60., 1e0, 60., 's'),
-    )
-
     def __init__(self, timings):
         self.__timings = timings
 
@@ -100,18 +94,7 @@ class Handle(object):
             str: the duration representation.
 
         """
-        value = self.duration
-        for top, mult, size, unit in Handle.DURATION_HUMAN_SPEC:
-            if value < top:
-                result = round(value * mult, ndigits=2)
-                if result < size:
-                    return '{}{}'.format(result, unit)
-
-        txt = str(timedelta(seconds=float('{:.1f}'.format(value))))
-        pos = txt.find('.')
-        if pos == -1:
-            return txt
-        return txt[:pos + 2]
+        return human.duration_human(self.duration)
 
 
 class HandleResult(Handle):
@@ -131,13 +114,6 @@ class HandleResult(Handle):
 
 
 class HandleStats(Handle):
-    THROUGHPUT_HUMAN_SPEC = (
-        (1. / 60 / 24, 60 * 60 * 24, 24, '/d'),
-        (1. / 60, 60 * 60, 60, '/h'),
-        (1., 60, 60, '/m'),
-        (float('inf'), 1, float('inf'), '/s'),
-    )
-
     def __init__(self, timings, it_closure):
         super(HandleStats, self).__init__(timings)
         self.__it = it_closure
@@ -167,7 +143,7 @@ class HandleStats(Handle):
         """
         try:
             return self.count / self.duration
-        except ZeroDivisionError:
+        except ZeroDivisionError:  # pragma: no cover
             return float('nan')
 
     @property
@@ -179,13 +155,4 @@ class HandleStats(Handle):
             str: the duration representation.
 
         """
-        if self.count == 0:
-            return '-'
-
-        value = self.throughput
-        for top, mult, size, unit in HandleStats.THROUGHPUT_HUMAN_SPEC:
-            if value < top:
-                result = round(value * mult, ndigits=2)
-                if result < size:
-                    return '{}{}'.format(result, unit)
-        return '?'
+        return human.throughput_human(self.throughput)
