@@ -13,7 +13,7 @@ except ImportError:
 
 import pytest
 
-from about_time import about_time
+from about_time import about_time, duration_human, throughput_human
 from about_time.core import Handle, HandleStats
 
 
@@ -145,6 +145,25 @@ def test_wrong_params_must_complain(value):
         about_time(value)
 
 
+def test_handle_duration_human():
+    h = Handle([1, 2])
+    with mock.patch('about_time.human.duration_human') as mdh:
+        assert h.duration_human  # the mock is returned.
+    mdh.assert_called_once_with(1)
+
+
+def test_handle_throughput_human():
+    def it_closure():
+        pass
+
+    it_closure.count = 1
+    h = HandleStats([1, 2], it_closure)
+
+    with mock.patch('about_time.human.throughput_human') as mth:
+        assert h.throughput_human  # the mock is returned.
+    mth.assert_called_once_with(1)
+
+
 @pytest.mark.parametrize('duration, expected', [
     (.00000000123, '1.23ns'),
     (.00000000185, '1.85ns'),
@@ -172,14 +191,11 @@ def test_wrong_params_must_complain(value):
     (4488.395, '1:14:48.4'),
 ])
 def test_duration_human(duration, expected):
-    h = Handle([0., duration])
-
-    assert h.duration_human == expected
+    assert duration_human(duration) == expected
 
 
-@pytest.mark.parametrize('end, count, expected', [
-    (0., 1, '?'),
-    (1., 0, '-'),
+@pytest.mark.parametrize('duration, count, expected', [
+    (float('nan'), 1, '?'),
     (1., 1, '1.0/s'),
     (1., 10, '10.0/s'),
     (1., 2500, '2500.0/s'),
@@ -205,11 +221,5 @@ def test_duration_human(duration, expected):
     (3601., 1, '23.99/d'),
     (80000., 2, '2.16/d'),
 ])
-def test_throughput_human(end, count, expected, rand_offset):
-    def it_closure():
-        pass
-
-    it_closure.count = count
-    h = HandleStats([rand_offset, end + rand_offset], it_closure)
-
-    assert h.throughput_human == expected
+def test_throughput_human(duration, count, expected):
+    assert throughput_human(count / duration) == expected
