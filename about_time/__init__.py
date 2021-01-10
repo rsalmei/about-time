@@ -6,7 +6,7 @@ import sys
 from .core import about_time
 from .human import duration_human, throughput_human
 
-VERSION = (3, 1, 0)
+VERSION = (3, 1, 1)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'
