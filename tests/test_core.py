@@ -13,7 +13,7 @@ except ImportError:
 
 import pytest
 
-from about_time import about_time, duration_human, throughput_human
+from about_time import about_time
 from about_time.core import Handle, HandleStats
 
 
@@ -162,64 +162,3 @@ def test_handle_throughput_human():
     with mock.patch('about_time.human.throughput_human') as mth:
         assert h.throughput_human  # the mock is returned.
     mth.assert_called_once_with(1)
-
-
-@pytest.mark.parametrize('duration, expected', [
-    (.00000000123, '1.23ns'),
-    (.00000000185, '1.85ns'),
-    (.000000001855, '1.85ns'),
-    (.0000000018551, '1.86ns'),
-    (.000001, '1.0us'),
-    (.000000999996, '1.0us'),
-    (.00001, '10.0us'),
-    (.0000156, '15.6us'),
-    (.01, '10.0ms'),
-    (.0141233333333, '14.12ms'),
-    (.0199999, '20.0ms'),
-    (.1099999, '110.0ms'),
-    (.1599999, '160.0ms'),
-    (.8015, '801.5ms'),
-    (3.434999, '3.43s'),
-    (3.435999, '3.44s'),
-    (59.99, '59.99s'),
-    (59.999, '0:01:00'),
-    (60.0, '0:01:00'),
-    (68.5, '0:01:08.5'),
-    (68.09, '0:01:08.1'),
-    (60.99, '0:01:01'),
-    (125.825, '0:02:05.8'),
-    (4488.395, '1:14:48.4'),
-])
-def test_duration_human(duration, expected):
-    assert duration_human(duration) == expected
-
-
-@pytest.mark.parametrize('duration, count, expected', [
-    (float('nan'), 1, '?'),
-    (1., 1, '1.0/s'),
-    (1., 10, '10.0/s'),
-    (1., 2500, '2500.0/s'),
-    (1., 1825000, '1825000.0/s'),
-    (5.47945205e-07, 1, '1825000.0/s'),
-    (2., 1, '30.0/m'),
-    (2., 10, '5.0/s'),
-    (2., 11, '5.5/s'),
-    (1.981981981981982, 11, '5.55/s'),
-    (100., 10, '6.0/m'),
-    (100., 3, '1.8/m'),
-    (110., 8, '4.36/m'),
-    (1600., 3, '6.75/h'),
-    (67587655435., 5432737542, '4.82/m'),
-    (67587655435., 543273754, '28.94/h'),
-    (67587655435., 543273754271, '8.04/s'),
-    (.99, 1, '1.01/s'),
-    (.999, 1, '1.0/s'),
-    (1.00001, 1, '1.0/s'),
-    (1.0001, 1, '59.99/m'),
-    (1165263., 123, '9.12/d'),
-    (3600., 1, '1.0/h'),
-    (3601., 1, '23.99/d'),
-    (80000., 2, '2.16/d'),
-])
-def test_throughput_human(duration, count, expected):
-    assert throughput_human(count / duration) == expected
