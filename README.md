@@ -223,6 +223,7 @@ The `throughput_human` unit changes seamlessly from per-second, per-minute, per-
 
 
 ## Changelog highlights:
+- 3.2.2: support kibibyte standard for base 2 (1024)
 - 3.2.1: support divisor in throughput_human
 - 3.2.0: both durations and throughputs now use 3 significant digits; throughputs now include SI-prefixes
 - 3.1.1: make `duration_human()` and `throughput_human()` available for external use
