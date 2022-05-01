@@ -44,12 +44,14 @@ THROUGHPUT_HUMAN_SPEC = (
 )
 
 
-def throughput_human(value, what='', divisor=1000):
+def throughput_human(value, what='', base=10):
     """Return a beautiful representation of some throughput.
     It dynamically calculates the best unit to use.
 
     Args:
         value (float): value to be formatted
+        what (str): what is being measured
+        base (int): value to be formatted
 
     Returns:
         str: the human friendly representation.
@@ -66,24 +68,28 @@ def throughput_human(value, what='', divisor=1000):
             return '{:2.1f}{}{}'.format(value, what, unit)
         value /= size
 
-    return '{}/s'.format(count_human(value, what, divisor))
+    return '{}/s'.format(count_human(value, what, base))
 
 
 COUNT_HUMAN_SPEC = ('', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+BYTES_HUMAN_SPEC = ('', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi')
 
 
-def count_human(value, what='', divisor=1000):
+def count_human(value, what='', base=10):
     """Return a beautiful representation of some count.
     It dynamically calculates the best unit to use.
 
     Args:
         value (float): value to be formatted
+        what (str): what is being measured
+        base (int): value to be formatted
 
     Returns:
         str: the human friendly representation.
 
     """
-    for unit in COUNT_HUMAN_SPEC:
+    divisor, spec = {2: (1024, BYTES_HUMAN_SPEC), 10: (1000, COUNT_HUMAN_SPEC)}[base]
+    for unit in spec:
         if value < 9.995:
             return '{:1.2f}{}{}'.format(value, unit, what)
         if value < 99.95:
@@ -92,4 +98,4 @@ def count_human(value, what='', divisor=1000):
             return '{:3.0f}{}{}'.format(value, unit, what)
         value /= divisor
 
-    return '{:3}Y+{}'.format(value, what)
+    return '{:3}+{}'.format(value, what)
