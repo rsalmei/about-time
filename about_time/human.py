@@ -44,7 +44,7 @@ THROUGHPUT_HUMAN_SPEC = (
 )
 
 
-def throughput_human(value, what=''):
+def throughput_human(value, what='', divisor=1000):
     """Return a beautiful representation of some throughput.
     It dynamically calculates the best unit to use.
 
@@ -66,7 +66,7 @@ def throughput_human(value, what=''):
             return '{:2.1f}{}{}'.format(value, what, unit)
         value /= size
 
-    return '{}/s'.format(count_human(value, what))
+    return '{}/s'.format(count_human(value, what, divisor))
 
 
 COUNT_HUMAN_SPEC = ('', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
