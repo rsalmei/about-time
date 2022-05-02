@@ -100,8 +100,11 @@ def test_counter_throughput_mode(it, rand_offset, mock_timer):
 @pytest.mark.parametrize('field', [
     'result',
     'count',
+    'count_human',
+    'count_human_as',
     'throughput',
     'throughput_human',
+    'throughput_human_as',
 ])
 def test_context_manager_mode_dont_have_field(field):
     with about_time() as at:
@@ -113,8 +116,11 @@ def test_context_manager_mode_dont_have_field(field):
 
 @pytest.mark.parametrize('field', [
     'count',
+    'count_human',
+    'count_human_as',
     'throughput',
     'throughput_human',
+    'throughput_human_as',
 ])
 def test_callable_mode_dont_have_field(field):
     at = about_time(lambda: 1)
@@ -152,6 +158,19 @@ def test_handle_duration_human():
     mdh.assert_called_once_with(1)
 
 
+def test_handle_count_human():
+    def it_closure():
+        pass
+
+    it_closure.count = 1
+    h = HandleStats([1, 2], it_closure)
+
+    with mock.patch('about_time.human.count_human') as mch:
+        _ = h.count_human  # the mock is returned.
+        h.count_human_as('asd', '2')  # the mock is returned.
+    mch.assert_has_calls((mock.call(1), mock.call(1, 'asd', '2')))
+
+
 def test_handle_throughput_human():
     def it_closure():
         pass
@@ -160,5 +179,6 @@ def test_handle_throughput_human():
     h = HandleStats([1, 2], it_closure)
 
     with mock.patch('about_time.human.throughput_human') as mth:
-        assert h.throughput_human  # the mock is returned.
-    mth.assert_called_once_with(1)
+        _ = h.throughput_human  # the mock is returned.
+        h.throughput_human_as('asd', '2')  # the mock is returned.
+    mth.assert_has_calls((mock.call(1), mock.call(1, 'asd', '2')))
