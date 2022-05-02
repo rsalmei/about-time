@@ -17,12 +17,14 @@ Did you ever need to measure the duration of an operation? Yeah, this is easy.
 
 But how to:
 - measure the duration of two or more blocks at the same time, including the whole duration?
-- instrument a code to cleanly retrieve duration in one line, to log or send to a time series database?
-- easily see human friendly durations with units like *ms* (milliseconds), *us* (microseconds) and even *ns* (nanoseconds)?
-- measure the throughput of a block? it is way harder, as it needs to measure both duration and iterations!
-- easily see human friendly throughputs in "per second", "per minute", "per hour" or even "per day"?
+- instrument a code to cleanly retrieve durations in one line, to log or send to time series databases?
+- easily see human friendly durations in *s* (seconds), *ms* (milliseconds), *µs* (microseconds) and even *ns* (nanoseconds)?
+- easily see human friendly counts with SI prefixes like *k*, *M*, *G*, *T*, etc?
+- measure the actual throughput of a block? (this is way harder, since it needs to measure both duration and number of iterations)
+- easily see human friendly throughputs in "/second", "/minute", "/hour" or even "/day", including SI prefixes?
 
-Yes, it can get complex! And even while one could do it, it would probably get messy and pollute the code being instrumented.
+Yes, it can get tricky! More interesting details about [duration](https://github.com/rsalmei/about-time#the-human-duration-magic) and [throughput](https://github.com/rsalmei/about-time#the-human-throughput-magic).
+<br>If you'd tried to do it without these magic, it would probably get messy and immensely pollute the code being instrumented.
 
 I have the solution, behold!
 
@@ -41,19 +43,19 @@ def main():
 
         t2 = about_time(some_func)  # <-- use it with any callable!!
 
-        t3 = about_time(x * 2 for x in range(5000))  # <-- use it with any iterable or generator!!!
+        t3 = about_time(x * 2 for x in range(56789))  # <-- use it with any iterable or generator!!!
         data = [x for x in t3]  # then just iterate!
 
     print(f'total: {t1.duration_human}')
     print(f'  some_func: {t2.duration_human} -> result: {t2.result}')
-    print(f'  generator: {t3.duration_human} -> {t3.count} elements, throughput: {t3.throughput_human}, result_len: {len(data)}')
+    print(f'  generator: {t3.duration_human} -> {t3.count_human} elements, throughput: {t3.throughput_human}')
 ```
 
 This `main()` function prints:
 ```
-total: 90.6ms
-  some_func: 90.0ms -> result: True
-  generator: 525µs -> 5000 elements, throughput: 9.52M/s, result_len: 5000
+total: 95.6ms
+  some_func: 89.7ms -> result: True
+  generator: 5.79ms -> 56.8k elements, throughput: 9.81M/s
 ```
 
 How cool is that? 😲👏
@@ -61,11 +63,11 @@ How cool is that? 😲👏
 You can also get the duration in seconds if needed:
 ```
 In [7]: t1.duration
-Out[7]: 0.09056673200064251
+Out[7]: 0.09556673200064251
 ```
-But `90.6ms` is way better, isn't it?
+But `95.6ms` is way better, isn't it? The same with `count` and `throughput`!
 
-So, `about_time` measures code blocks, both time and throughput, and converts to beautiful human friendly representations! 👏
+So, `about_time` measures code blocks, both time and throughput, and converts them to beautiful human friendly representations! 👏
 
 
 ## Get it
@@ -79,7 +81,7 @@ Just install with pip:
 
 ## Use it
 
-There're three modes of operation: context manager, callable and throughput. Let's dive in.
+There are three modes of operation: context manager, callable and throughput. Let's dive in.
 
 
 ### 1. Use it like a context manager:
@@ -87,11 +89,11 @@ There're three modes of operation: context manager, callable and throughput. Let
 ```python
 from about_time import about_time
 
-with about_time() as at:
+with about_time() as t:
     # the code to be measured...
     # any lenghty block.
 
-print(f'The whole block took: {at.duration_human}')
+print(f'The whole block took: {t.duration_human}')
 ```
 
 This way you can nicely wrap any amount of code.
@@ -104,10 +106,10 @@ This way you can nicely wrap any amount of code.
 ```python
 from about_time import about_time
 
-at = about_time(some_func)
+t = about_time(some_func)
 
-print(f'The whole block took: {at.duration_human}')
-print(f'And the result was: {at.result}')
+print(f'The whole block took: {t.duration_human}')
+print(f'And the result was: {t.result}')
 
 ```
 
@@ -121,11 +123,11 @@ If the callable have params, you can use a `lambda` or (📌 new) simply send th
 def add(n, m):
     return n + m
 
-at = about_time(add, 1, 41)
+t = about_time(add, 1, 41)
 # or:
-at = about_time(add, n=1, m=41)
+t = about_time(add, n=1, m=41)
 # or even:
-at = about_time(lambda: add(1, 41))
+t = about_time(lambda: add(1, 41))
 
 ```
 
@@ -135,29 +137,24 @@ at = about_time(lambda: add(1, 41))
 ```python
 from about_time import about_time
 
-at = about_time(iterable)
-for item in at:
+t = about_time(iterable)
+for item in t:
     # process item.
 
-print(f'The whole block took: {at.duration_human}')
-print(f'It was detected {at.count} elements')
-print(f'The throughput was: {at.throughput_human}')
+print(f'The whole block took: {t.duration_human}')
+print(f'It was detected {t.count_human} elements')
+print(f'The throughput was: {t.throughput_human}')
 ```
 
-This way `about_time` also extracts the number of iterations, and with the measured duration it calculates the throughput of the whole loop! Specially useful with generators, which do not have length.
+This way `about_time` also extracts the number of iterations, and with the measured duration it calculates the throughput of the whole loop! It's especially useful with generators, which do not have length.
 
-> In this mode, there are the additional fields `count`, `throughput` and `throughput_human`, which should be self-descriptive at this point.
+> In this mode, there are the additional fields `count`, `count_human`, `throughput` and `throughput_human`.
 
 Cool tricks under the hood:
 - you can use it even with generator expressions, anything that is iterable to python!
-- you can consume it not only in a `for` loop, but also in {list|dict|set} comprehensions, `map()`s, `filter()`s, `sum()`s, `max()`s, `list()`s, etc, thus any function that expects an iterator! 👏
+- you can consume it not only in a `for` loop, but also in { list | dict | set } comprehensions, `map()`s, `filter()`s, `sum()`s, `max()`s, `list()`s, etc, thus any function that expects an iterator! 👏
 - the timer only starts when the first element is queried, so you can initialize whatever you need before entering the loop! 👏
-- the `count` and `throughput`/`throughput_human` fields are updated in **real time**, so you can use them even inside the loop!
-
-
-## Accuracy
-
-`about_time` supports all versions of python, but in pythons >= `3.3` it performs even better, with much higher resolution and smaller propagation of errors, thanks to the new `time.perf_counter`. In older versions, it uses `time.time` as usual.
+- the `count`/`count_human` and `throughput`/`throughput_human` fields are updated in **real time**, so you can use them even inside the loop!
 
 
 ## The human duration magic
@@ -179,9 +176,9 @@ Some examples:
 | duration (float seconds) | duration_human |
 |:------------------------:|:--------------:|
 |       .00000000185       |    '1.85ns'    |
-|      .000000999996       |    '1.00us'    |
-|          .00001          |    '10.0us'    |
-|         .0000156         |    '15.6us'    |
+|      .000000999996       |    '1.00µs'    |
+|          .00001          |    '10.0µs'    |
+|         .0000156         |    '15.6µs'    |
 |           .01            |    '10.0ms'    |
 |      .0141233333333      |    '14.1ms'    |
 |         .1099999         |    '110ms'     |
@@ -222,8 +219,14 @@ The `throughput_human` unit changes seamlessly from per-second, per-minute, per-
 |        1165263\.         |        123         |     '9.12/d'     |
 
 
+## Accuracy
+
+`about_time` supports all versions of python, but in pythons >= `3.3` it performs even better, with much higher resolution and smaller propagation of errors, thanks to the new `time.perf_counter`. In older versions, it uses `time.time` as usual.
+
+
 ## Changelog highlights:
-- 3.2.2: support kibibyte standard for base 2 (1024)
+- 3.3.0: new interfaces for count_human and throughput_human; support more common Kbyte for base 2 (1024), leaving IEC one as an alternate
+- 3.2.2: support IEC kibibyte standard for base 2 (1024)
 - 3.2.1: support divisor in throughput_human
 - 3.2.0: both durations and throughputs now use 3 significant digits; throughputs now include SI-prefixes
 - 3.1.1: make `duration_human()` and `throughput_human()` available for external use
