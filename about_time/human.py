@@ -44,14 +44,14 @@ THROUGHPUT_HUMAN_SPEC = (
 )
 
 
-def throughput_human(value, what='', base=10):
+def throughput_human(value, what='', scale='10'):
     """Return a beautiful representation of some throughput.
     It dynamically calculates the best unit to use.
 
     Args:
         value (float): value to be formatted
         what (str): what is being measured
-        base (int): value to be formatted
+        scale (str): define the divisor and the symbols
 
     Returns:
         str: the human friendly representation.
@@ -68,34 +68,39 @@ def throughput_human(value, what='', base=10):
             return '{:2.1f}{}{}'.format(value, what, unit)
         value /= size
 
-    return '{}/s'.format(count_human(value, what, base))
+    return '{}/s'.format(count_human(value, what, scale))
 
 
 COUNT_HUMAN_SPEC = ('', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
-BYTES_HUMAN_SPEC = ('', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi')
+BYTES_SPEC = ('', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+BYTES_IEC_SPEC = ('', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi')
 
 
-def count_human(value, what='', base=10):
+def count_human(value, what='', scale='10'):
     """Return a beautiful representation of some count.
-    It dynamically calculates the best unit to use.
+    It dynamically calculates the best scale to use.
 
     Args:
         value (float): value to be formatted
         what (str): what is being measured
-        base (int): value to be formatted
+        scale (str): define the divisor and the symbols
 
     Returns:
         str: the human friendly representation.
 
     """
-    divisor, spec = {2: (1024, BYTES_HUMAN_SPEC), 10: (1000, COUNT_HUMAN_SPEC)}[base]
-    for unit in spec:
+    divisor, spec = {
+        '2': (1024, BYTES_SPEC),
+        '2_iec': (1024, BYTES_IEC_SPEC),
+        '10': (1000, COUNT_HUMAN_SPEC)
+    }[scale]
+    for scale in spec:
         if value < 9.995:
-            return '{:1.2f}{}{}'.format(value, unit, what)
+            return '{:1.2f}{}{}'.format(value, scale, what)
         if value < 99.95:
-            return '{:2.1f}{}{}'.format(value, unit, what)
+            return '{:2.1f}{}{}'.format(value, scale, what)
         if value < 999.5:
-            return '{:3.0f}{}{}'.format(value, unit, what)
+            return '{:3.0f}{}{}'.format(value, scale, what)
         value /= divisor
 
     return '{:3}+{}'.format(value, what)
