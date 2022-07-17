@@ -1,18 +1,14 @@
-# coding=utf-8
-from __future__ import absolute_import, division, unicode_literals
-
-import sys
-
 from .core import about_time
-from .human import count_human, duration_human, throughput_human
+from .features import FEATURES
+from .human_count import HumanCount
+from .human_duration import HumanDuration
+from .human_throughput import HumanThroughput
 
-VERSION = (3, 3, 0)
+VERSION = (4, 0, 0)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'
 __version__ = '.'.join(map(str, VERSION))
 
-__all__ = ('__author__', '__version__', 'about_time', 'count_human', 'duration_human',
-           'throughput_human')
-if sys.version_info < (3,):  # pragma: no cover
-    __all__ = [bytes(x) for x in __all__]
+__all__ = ('__author__', '__version__', 'about_time', 'HumanCount', 'HumanDuration',
+           'HumanThroughput', 'FEATURES')

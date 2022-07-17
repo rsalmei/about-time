@@ -157,6 +157,36 @@ Cool tricks under the hood:
 - the `count`/`count_human` and `throughput`/`throughput_human` fields are updated in **real time**, so you can use them even inside the loop!
 
 
+## Features:
+
+According to the SI standard, there are 1000 bytes in a `kilobyte`.
+<br>There is another standard called IEC that has 1024 bytes in a `kibibyte`, but this is only useful when measuring things that are naturally a power of two, e.g. a stick of RAM.
+
+Be careful to not render IEC quantities with SI scaling, which would be incorrect. But I still support it, if you really want to ;)
+
+By default, this will use SI, `1000` divisor, and `no space` between values and scales/units. SI uses prefixes: `k`, `M`, `G`, `T`, `P`, `E`, `Z`, and `Y`.
+
+These are the optional features:
+- `iec` => use IEC instead of SI: `Ki`, `Mi`, `Gi`, `Ti`, `Pi`, `Ei`, `Zi`, `Yi` (implies `1024`);
+- `1024` => use `1024` divisor — if `iec` is not enabled, use prefixes: `K`, `M`, `G`, `T`, `P`, `E`, `Z`, and `Y` (note the upper 'K');
+- `space` => include a space between values and scales/units everywhere: `48 B` instead of `48B`, `15.6 µs` instead of `15.6µs`, and `12.4 kB/s` instead of `12.4kB/s`.
+
+To change them, just use the properties:
+
+```python
+from about_time import FEATURES
+
+FEATURES.feature_1024
+FEATURES.feature_iec
+FEATURES.feature_space
+```
+
+For example, to enable spaces between scales/units:
+```python
+from about_time import FEATURES
+FEATURES.feature_space = True
+```
+
 ## The human duration magic
 
 I've used just one key concept in designing the human duration features: cleanliness.
@@ -225,6 +255,7 @@ The `throughput_human` unit changes seamlessly from per-second, per-minute, per-
 
 
 ## Changelog highlights:
+- 4.0.0: new version, modeled after my Rust implementation in https://crates.io/crates/human-repr; includes new global features, new objects for each operation, and especially, new simpler human friendly representations; supports Python 3.7+
 - 3.3.0: new interfaces for count_human and throughput_human; support more common Kbyte for base 2 (1024), leaving IEC one as an alternate
 - 3.2.2: support IEC kibibyte standard for base 2 (1024)
 - 3.2.1: support divisor in throughput_human
