@@ -1,4 +1,4 @@
-from .features import FEATURES
+from .features import FEATURES, conv_space
 
 SPEC = (
     (1e3, 1e3, "ns", 1),
@@ -10,8 +10,7 @@ SPEC = (
 )
 
 
-def as_human(val: float):
-    space = FEATURES.conv_space
+def __human_duration(val: float, space: str):
     val *= 1e9
     for size, div_next, scale, dec in SPEC:
         r = round(val, dec)
@@ -35,6 +34,14 @@ def as_human(val: float):
         return '{:.0f}:{:02.0f}:{:02.0f}'.format(m / 60. // 1., m % 60. // 1., val % 60. // 1.)
 
 
+def fn_human_duration(space: bool):
+    def run(val):
+        return __human_duration(val, space)
+
+    space = conv_space(space)
+    return run
+
+
 class HumanDuration(object):
     def __init__(self, value):
         assert value >= 0.
@@ -52,7 +59,7 @@ class HumanDuration(object):
             the human friendly representation.
 
         """
-        return as_human(self._value)
+        return fn_human_duration(FEATURES.feature_space)(self._value)
 
     def __str__(self):
         return self.as_human()

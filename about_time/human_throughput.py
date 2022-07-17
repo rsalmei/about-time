@@ -1,5 +1,5 @@
-from .features import FEATURES
-from .human_count import as_human as as_human_count
+from .features import FEATURES, conv_space
+from .human_count import fn_human_count
 
 SPEC = (
     (24., "/d", 2),
@@ -9,8 +9,7 @@ SPEC = (
 )
 
 
-def as_human(val: float, unit: str):
-    space = FEATURES.conv_space
+def __human_throughput(val: float, unit: str, space: str, fn_count):
     val *= 60. * 60. * 24.
     for size, scale, dec in SPEC:
         r = round(val, dec)
@@ -23,7 +22,16 @@ def as_human(val: float, unit: str):
         else:
             return '{:.2f}{}{}{}'.format(r, space, unit, scale)
 
-    return '{}/s'.format(as_human_count(val, unit))
+    return '{}/s'.format(fn_count(val, unit))
+
+
+def fn_human_throughput(space: bool, d1024: bool, iec: bool):
+    def run(val, unit):
+        return __human_throughput(val, unit, space, fn_count)
+
+    fn_count = fn_human_count(space, d1024, iec)
+    space = conv_space(space)
+    return run
 
 
 class HumanThroughput(object):
@@ -48,7 +56,8 @@ class HumanThroughput(object):
             the human friendly representation.
 
         """
-        return as_human(self._value, self._unit)
+        return fn_human_throughput(FEATURES.feature_space, FEATURES.feature_1024,
+                                   FEATURES.feature_iec)(self._value, self._unit)
 
     def __str__(self):
         return self.as_human()
