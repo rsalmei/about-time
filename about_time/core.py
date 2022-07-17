@@ -1,16 +1,6 @@
-# coding=utf-8
-from __future__ import absolute_import, division, unicode_literals
-
-import sys
 import time
 from contextlib import contextmanager
 
-from . import human
-
-if sys.version_info >= (3, 3):
-    timer = time.perf_counter
-else:  # pragma: no cover
-    timer = time.time
 
 
 def about_time(func_or_it=None, *args, **kwargs):
@@ -66,9 +56,9 @@ def about_time(func_or_it=None, *args, **kwargs):
 
 @contextmanager
 def _context_timing(timings, handle=None):
-    timings[0] = timer()
+    timings[0] = time.perf_counter()
     yield handle
-    timings[1] = timer()
+    timings[1] = time.perf_counter()
 
 
 class Handle(object):
@@ -84,7 +74,7 @@ class Handle(object):
             float: the number of seconds.
 
         """
-        return (self.__timings[1] or timer()) - self.__timings[0]
+        return (self.__timings[1] or time.perf_counter()) - self.__timings[0]
 
     @property
     def duration_human(self):

@@ -24,7 +24,7 @@ def rand_offset():
 
 @pytest.fixture
 def mock_timer():
-    with mock.patch('about_time.core.timer') as mt:
+    with mock.patch('time.perf_counter') as mt:
         yield mt
 
 
