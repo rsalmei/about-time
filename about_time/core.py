@@ -1,23 +1,16 @@
-# coding=utf-8
-from __future__ import absolute_import, division, unicode_literals
-
-import sys
 import time
 from contextlib import contextmanager
 
-from . import human
-
-if sys.version_info >= (3, 3):
-    timer = time.perf_counter
-else:  # pragma: no cover
-    timer = time.time
+from .human_count import HumanCount
+from .human_duration import HumanDuration
+from .human_throughput import HumanThroughput
 
 
 def about_time(func_or_it=None, *args, **kwargs):
     """Measure timing and throughput of code blocks, with beautiful
     human friendly representations.
 
-    There're three modes of operation: context manager, callable and
+    There are three modes of operation: context manager, callable and
     throughput.
 
     1. Use it like a context manager:
@@ -66,9 +59,9 @@ def about_time(func_or_it=None, *args, **kwargs):
 
 @contextmanager
 def _context_timing(timings, handle=None):
-    timings[0] = timer()
+    timings[0] = time.perf_counter()
     yield handle
-    timings[1] = timer()
+    timings[1] = time.perf_counter()
 
 
 class Handle(object):
@@ -76,26 +69,26 @@ class Handle(object):
         self.__timings = timings
 
     @property
-    def duration(self):
+    def duration(self) -> float:
         """Return the actual duration in seconds.
         This is dynamically updated in real time.
 
         Returns:
-            float: the number of seconds.
+            the number of seconds.
 
         """
-        return (self.__timings[1] or timer()) - self.__timings[0]
+        return (self.__timings[1] or time.perf_counter()) - self.__timings[0]
 
     @property
-    def duration_human(self):
+    def duration_human(self) -> HumanDuration:
         """Return a beautiful representation of the duration.
         It dynamically calculates the best unit to use.
 
         Returns:
-            str: the human representation.
+            the human representation.
 
         """
-        return human.duration_human(self.duration)
+        return HumanDuration(self.duration)
 
 
 class HandleResult(Handle):
@@ -123,48 +116,47 @@ class HandleStats(Handle):
         return self.__it()
 
     @property
-    def count(self):
+    def count(self) -> int:
         """Return the current iteration count.
         This is dynamically updated in real time.
 
         Returns:
-            int: the current iteration count.
+            the current iteration count.
 
         """
         return self.__it.count
 
     @property
-    def count_human(self):
+    def count_human(self) -> HumanCount:
         """Return a beautiful representation of the current iteration count.
         This is dynamically updated in real time.
 
         Returns:
-            str: the human representation.
+            the human representation.
 
         """
-        return human.count_human(self.count)
+        return self.count_human_as('')
 
-    def count_human_as(self, what='', scale='10'):
+    def count_human_as(self, unit: str) -> HumanCount:
         """Return a beautiful representation of the current iteration count.
         This is dynamically updated in real time.
 
         Args:
-            what (str): what is being measured
-            scale (str): define the divisor and the symbols
+            unit: what is being measured
 
         Returns:
-            str: the human representation.
+            the human representation.
 
         """
-        return human.count_human(self.count, what, scale)
+        return HumanCount(self.count, unit)
 
     @property
-    def throughput(self):
+    def throughput(self) -> float:
         """Return the current throughput in items per second.
         This is dynamically updated in real time.
 
         Returns:
-            float: the number of items per second.
+            the number of items per second.
 
         """
         try:
@@ -173,26 +165,25 @@ class HandleStats(Handle):
             return float('nan')
 
     @property
-    def throughput_human(self):
+    def throughput_human(self) -> HumanThroughput:
         """Return a beautiful representation of the current throughput.
         It dynamically calculates the best unit to use.
 
         Returns:
-            str: the human representation.
+            the human representation.
 
         """
-        return human.throughput_human(self.throughput)
+        return self.throughput_human_as('')
 
-    def throughput_human_as(self, what='', scale='10'):
+    def throughput_human_as(self, unit: str) -> HumanThroughput:
         """Return a beautiful representation of the current throughput.
         It dynamically calculates the best unit to use.
 
         Args:
-            what (str): what is being measured
-            scale (str): define the divisor and the symbols
+            unit: what is being measured
 
         Returns:
-            str: the human representation.
+            the human representation.
 
         """
-        return human.throughput_human(self.throughput, what, scale)
+        return HumanThroughput(self.throughput, unit)

@@ -24,7 +24,7 @@ def rand_offset():
 
 @pytest.fixture
 def mock_timer():
-    with mock.patch('about_time.core.timer') as mt:
+    with mock.patch('time.perf_counter') as mt:
         yield mt
 
 
@@ -153,9 +153,7 @@ def test_wrong_params_must_complain(value):
 
 def test_handle_duration_human():
     h = Handle([1, 2])
-    with mock.patch('about_time.human.duration_human') as mdh:
-        assert h.duration_human  # the mock is returned.
-    mdh.assert_called_once_with(1)
+    assert h.duration_human.value == 1
 
 
 def test_handle_count_human():
@@ -164,11 +162,7 @@ def test_handle_count_human():
 
     it_closure.count = 1
     h = HandleStats([1, 2], it_closure)
-
-    with mock.patch('about_time.human.count_human') as mch:
-        _ = h.count_human  # the mock is returned.
-        h.count_human_as('asd', '2')  # the mock is returned.
-    mch.assert_has_calls((mock.call(1), mock.call(1, 'asd', '2')))
+    assert h.count_human.value == 1
 
 
 def test_handle_throughput_human():
@@ -177,8 +171,4 @@ def test_handle_throughput_human():
 
     it_closure.count = 1
     h = HandleStats([1, 2], it_closure)
-
-    with mock.patch('about_time.human.throughput_human') as mth:
-        _ = h.throughput_human  # the mock is returned.
-        h.throughput_human_as('asd', '2')  # the mock is returned.
-    mth.assert_has_calls((mock.call(1), mock.call(1, 'asd', '2')))
+    assert h.throughput_human.value == 1
