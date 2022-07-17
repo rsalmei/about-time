@@ -31,9 +31,9 @@ class Features:
         self._feature_iec = bool(value)
         self.feature_1024 = value
 
-    @property
-    def conv_space(self) -> str:
-        return {False: '', True: ' '}[self.feature_space]
+
+def conv_space(space: bool) -> str:
+    return {False: '', True: ' '}[space]
 
 
 FEATURES = Features()

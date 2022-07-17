@@ -1,4 +1,4 @@
-from .features import FEATURES
+from .features import FEATURES, conv_space
 
 SI_1000_SPEC = ('', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
 SI_1024_SPEC = ('', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
@@ -6,17 +6,7 @@ IEC_1024_SPEC = ('', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi')
 DECIMALS = [1, 1, 1, 2, 2, 2, 2, 2, 2]
 
 
-def div_spec() -> (int, tuple):
-    return {
-        (False, False): (1000, SI_1000_SPEC),
-        (True, False): (1024, SI_1024_SPEC),
-        (True, True): (1024, IEC_1024_SPEC),
-    }[(FEATURES.feature_1024, FEATURES.feature_iec)]
-
-
-def as_human(val: float, unit: str):
-    space = FEATURES.conv_space
-    divisor, spec = div_spec()
+def __human_count(val: float, unit: str, space: str, divisor: int, spec: tuple) -> str:
     for scale, dec in zip(spec, DECIMALS):
         r = round(val, dec)
         if r >= divisor:
@@ -29,6 +19,20 @@ def as_human(val: float, unit: str):
             return '{:.2f}{}{}{}'.format(r, space, scale, unit)
 
     return '{:.2f}{}+{}'.format(val, space, unit)
+
+
+def fn_human_count(space: bool, d1024: bool, iec: bool):
+    def run(val, unit):
+        return __human_count(val, unit, space, divisor, spec)
+
+    space = conv_space(space)
+    divisor, spec = {
+        (False, False): (1000, SI_1000_SPEC),
+        (True, False): (1024, SI_1024_SPEC),
+        (True, True): (1024, IEC_1024_SPEC),
+        (False, True): (1024, IEC_1024_SPEC),  # invalid combination, which just returns the above.
+    }[(d1024, iec)]
+    return run
 
 
 class HumanCount(object):
@@ -53,7 +57,8 @@ class HumanCount(object):
             the human friendly representation.
 
         """
-        return as_human(self._value, self._unit)
+        return fn_human_count(FEATURES.feature_space, FEATURES.feature_1024,
+                              FEATURES.feature_iec)(self._value, self._unit)
 
     def __str__(self):
         return self.as_human()

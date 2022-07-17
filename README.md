@@ -255,6 +255,7 @@ The `throughput_human` unit changes seamlessly from per-second, per-minute, per-
 
 
 ## Changelog highlights:
+- 4.1.0: enable to cache features within closures, to improve performance for https://github.com/rsalmei/alive-progress
 - 4.0.0: new version, modeled after my Rust implementation in https://crates.io/crates/human-repr; includes new global features, new objects for each operation, and especially, new simpler human friendly representations; supports Python 3.7+
 - 3.3.0: new interfaces for count_human and throughput_human; support more common Kbyte for base 2 (1024), leaving IEC one as an alternate
 - 3.2.2: support IEC kibibyte standard for base 2 (1024)
