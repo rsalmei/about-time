@@ -4,7 +4,7 @@ from .human_count import HumanCount
 from .human_duration import HumanDuration
 from .human_throughput import HumanThroughput
 
-VERSION = (4, 0, 0)
+VERSION = (4, 1, 0)
 
 __author__ = 'Rogério Sampaio de Almeida'
 __email__ = 'rsalmei@gmail.com'
