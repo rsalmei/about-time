@@ -6,7 +6,7 @@ from setuptools import find_packages
 import about_time
 
 def get_readme():
-    with open('README.md') as readme_file:
+    with open('README.md', encoding='utf-8') as readme_file:
         return readme_file.read()
 
 
