@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .features import FEATURES, conv_space
 
 SI_1000_SPEC = ('', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
@@ -6,24 +8,31 @@ IEC_1024_SPEC = ('', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi')
 DECIMALS = [1, 1, 1, 2, 2, 2, 2, 2, 2]
 
 
-def __human_count(val: float, unit: str, space: str, divisor: int, spec: tuple) -> str:
+def __human_count(val: float, unit: str, prec: Optional[int], space: str, divisor: int,
+                  spec: tuple) -> str:
     for scale, dec in zip(spec, DECIMALS):
         r = round(val, dec)
         if r >= divisor:
             val /= divisor
-        elif r % 1. == 0.:
-            return '{:.0f}{}{}{}'.format(r, space, scale, unit)
-        elif (r * 10.) % 1. == 0.:
-            return '{:.1f}{}{}{}'.format(r, space, scale, unit)
-        else:
-            return '{:.2f}{}{}{}'.format(r, space, scale, unit)
+            continue
+        break
+    else:
+        r, scale = val, '+'
 
-    return '{:.2f}{}+{}'.format(val, space, unit)
+    if prec is not None:
+        pass
+    elif r % 1. == 0.:
+        prec = 0
+    elif (r * 10.) % 1. == 0.:
+        prec = 1
+    else:
+        prec = 2
+    return '{:.{}f}{}{}{}'.format(r, prec, space, scale, unit)
 
 
 def fn_human_count(space: bool, d1024: bool, iec: bool):
-    def run(val, unit):
-        return __human_count(val, unit, space, divisor, spec)
+    def run(val: float, unit: str, prec: Optional[int]):
+        return __human_count(val, unit, prec, space, divisor, spec)
 
     space = conv_space(space)
     divisor, spec = {
@@ -49,16 +58,19 @@ class HumanCount(object):
         self._unit = value
         return self
 
-    def as_human(self) -> str:
+    def as_human(self, prec: Optional[int] = None) -> str:
         """Return a beautiful representation of this count.
         It dynamically calculates the best scale to use.
+
+        Args:
+            prec: an optional custom precision
 
         Returns:
             the human friendly representation.
 
         """
         return fn_human_count(FEATURES.feature_space, FEATURES.feature_1024,
-                              FEATURES.feature_iec)(self._value, self._unit)
+                              FEATURES.feature_iec)(self._value, self._unit, prec)
 
     def __str__(self):
         return self.as_human()
