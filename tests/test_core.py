@@ -1,15 +1,8 @@
-# coding=utf-8
-from __future__ import absolute_import, division, unicode_literals
-
 import random
 from datetime import datetime
 from decimal import Decimal
 from itertools import chain, repeat, tee
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 import pytest
 

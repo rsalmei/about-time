@@ -20,7 +20,7 @@ def __human_throughput(val: float, unit: str, prec: Optional[int], space: str, f
             continue
 
         if prec is not None:
-            pass
+            r = round(val, prec)
         elif r % 1. == 0.:
             prec = 0
         elif (r * 10.) % 1. == 0.:

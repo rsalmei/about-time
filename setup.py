@@ -1,9 +1,9 @@
-import sys
 from distutils.core import setup
 
 from setuptools import find_packages
 
 import about_time
+
 
 def get_readme():
     with open('README.md', encoding='utf-8') as readme_file:
@@ -49,6 +49,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
     keywords='python track tracker time code blocks monitor statistics analytics'.split(),
     packages=find_packages(),
