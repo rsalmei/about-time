@@ -1,9 +1,9 @@
-import sys
 from distutils.core import setup
 
 from setuptools import find_packages
 
 import about_time
+
 
 def get_readme():
     with open('README.md', encoding='utf-8') as readme_file:
