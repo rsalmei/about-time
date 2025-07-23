@@ -31,7 +31,7 @@ def __human_count(val: float, unit: str, prec: Optional[int], space: str, diviso
 
 
 def fn_human_count(space: bool, d1024: bool, iec: bool):
-    def run(val: float, unit: str, prec: Optional[int]):
+    def run(val: float, unit: str, prec: Optional[int] = None):
         return __human_count(val, unit, prec, space, divisor, spec)
 
     space = conv_space(space)
