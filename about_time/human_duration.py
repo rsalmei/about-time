@@ -47,7 +47,7 @@ def __human_duration(val: float, prec: Optional[int], space: str) -> str:
 
 
 def fn_human_duration(space: bool):
-    def run(val, prec: Optional[int]):
+    def run(val, prec: Optional[int] = None):
         return __human_duration(val, prec, space)
 
     space = conv_space(space)

@@ -33,7 +33,7 @@ def __human_throughput(val: float, unit: str, prec: Optional[int], space: str, f
 
 
 def fn_human_throughput(space: bool, d1024: bool, iec: bool):
-    def run(val: float, unit: str, prec: Optional[int]):
+    def run(val: float, unit: str, prec: Optional[int] = None):
         return __human_throughput(val, unit, prec, space, fn_count)
 
     fn_count = fn_human_count(space, d1024, iec)
