@@ -2,6 +2,7 @@
 [<img align="right" alt="Donate with PayPal button" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate?business=6SWSHEB5ZNS5N&no_recurring=0&item_name=I%27m+the+author+of+alive-progress%2C+clearly+and+about-time.+Thank+you+for+appreciating+my+work%21&currency_code=USD)
 
 # about-time
+
 ### A cool helper for tracking time and throughput of code blocks, with beautiful human friendly renditions.
 
 [![Coverage](https://img.shields.io/badge/coverage-100%25-green.svg)]()
@@ -69,7 +70,6 @@ But `95.6ms` is way better, isn't it? The same with `count` and `throughput`!
 
 So, `about_time` measures code blocks, both time and throughput, and converts them to beautiful human friendly representations! 👏
 
-
 ## Get it
 
 Just install with pip:
@@ -78,11 +78,9 @@ Just install with pip:
 ❯ pip install about-time
 ```
 
-
 ## Use it
 
 There are three modes of operation: context manager, callable and throughput. Let's dive in.
-
 
 ### 1. Use it like a context manager:
 
@@ -90,8 +88,7 @@ There are three modes of operation: context manager, callable and throughput. Le
 from about_time import about_time
 
 with about_time() as t:
-    # the code to be measured...
-    # any lenghty block.
+    expensive()  # the code to be measured...
 
 print(f'The whole block took: {t.duration_human}')
 ```
@@ -99,7 +96,6 @@ print(f'The whole block took: {t.duration_human}')
 This way you can nicely wrap any amount of code.
 
 > In this mode, there are the basic fields `duration` and `duration_human`.
-
 
 ### 2. Use it with any callable:
 
@@ -123,6 +119,7 @@ If the callable have params, you can use a `lambda` or (📌 new) simply send th
 def add(n, m):
     return n + m
 
+
 t = about_time(add, 1, 41)
 # or:
 t = about_time(add, n=1, m=41)
@@ -131,7 +128,6 @@ t = about_time(lambda: add(1, 41))
 
 ```
 
-
 ### 3. Use it with any iterable or generator:
 
 ```python
@@ -139,7 +135,7 @@ from about_time import about_time
 
 t = about_time(iterable)
 for item in t:
-    # process item.
+    print(item)  # process item.
 
 print(f'The whole block took: {t.duration_human}')
 print(f'It was detected {t.count_human} elements')
@@ -155,7 +151,6 @@ Cool tricks under the hood:
 - you can consume it not only in a `for` loop, but also in { list | dict | set } comprehensions, `map()`s, `filter()`s, `sum()`s, `max()`s, `list()`s, etc, thus any function that expects an iterator! 👏
 - the timer only starts when the first element is queried, so you can initialize whatever you need before entering the loop! 👏
 - the `count`/`count_human` and `throughput`/`throughput_human` fields are updated in **real time**, so you can use them even inside the loop!
-
 
 ## Features:
 
@@ -184,6 +179,7 @@ FEATURES.feature_space
 For example, to enable spaces between scales/units:
 ```python
 from about_time import FEATURES
+
 FEATURES.feature_space = True
 ```
 
@@ -196,8 +192,8 @@ So what I do is: round values to at most two decimal places (three significant d
 > `0.000999999` does not end up as `999.99us` (truncate) nor `1000.0us` (bad unit), but is auto-upgraded to the next unit `1.0ms`!
 
 The `duration_human` units change seamlessly from nanoseconds to hours.
-  - values smaller than 60 seconds are always rendered as "num.D[D]unit", with one or two decimals;
-  - from 1 minute onward it changes to "H:MM:SS".
+- values smaller than 60 seconds are always rendered as "num.D[D]unit", with one or two decimals;
+- from 1 minute onward it changes to "H:MM:SS".
 
 It feels much more humane, humm? ;)
 
@@ -219,7 +215,6 @@ Some examples:
 |           68.5           |   '0:01:08'    |
 |         125.825          |   '0:02:05'    |
 |         4488.395         |   '1:14:48'    |
-
 
 ## The human throughput magic
 
@@ -248,13 +243,12 @@ The `throughput_human` unit changes seamlessly from per-second, per-minute, per-
 |           .99            |         1          |     '1.01/s'     |
 |        1165263\.         |        123         |     '9.12/d'     |
 
-
 ## Accuracy
 
 `about_time` supports all versions of python, but in pythons >= `3.3` it performs even better, with much higher resolution and smaller propagation of errors, thanks to the new `time.perf_counter`. In older versions, it uses `time.time` as usual.
 
-
 ## Changelog highlights:
+- 4.2.2: fix optional precision parameter not being actually optional; add `py.typed` in the distribution to satisfy mypy and other type checking tools; update build system and github workflow; drop Python 3.7 and include 3.12, 3.13, and 3.14.
 - 4.2.1: makes fixed precision actually gain more resolution, when going from a default 1 to 2 decimals
 - 4.2.0: support for fixed precision, useful when one needs output without varying lengths; official Python 3.11 support
 - 4.1.0: enable to cache features within closures, to improve performance for https://github.com/rsalmei/alive-progress
@@ -269,8 +263,8 @@ The `throughput_human` unit changes seamlessly from per-second, per-minute, per-
 - 2.0.0: feature complete, addition of callable and throughput modes
 - 1.0.0: first public release, context manager mode
 
-
 ## License
+
 This software is licensed under the MIT License. See the LICENSE file in the top distribution directory for the full license text.
 
 
