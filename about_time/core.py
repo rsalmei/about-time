@@ -1,12 +1,25 @@
+from __future__ import annotations
+
 import time
-from contextlib import contextmanager
+from contextlib import AbstractContextManager, contextmanager
+from typing import Callable, Generic, Iterable, TypeVar, overload
 
 from .human_count import HumanCount
 from .human_duration import HumanDuration
 from .human_throughput import HumanThroughput
 
+T = TypeVar("T")
 
-def about_time(func_or_it=None, *args, **kwargs):
+
+@overload
+def about_time(func: Callable[..., T], *args, **kwargs) -> "HandleResult[T]": ...
+@overload
+def about_time(it: Iterable[T]) -> "HandleStats": ...
+@overload
+def about_time() -> "AbstractContextManager[Handle]": ...
+
+
+def about_time(func_or_it: Callable[..., T] | Iterable[T] | None = None, *args, **kwargs):
     """Measure timing and throughput of code blocks, with beautiful
     human friendly representations.
 
@@ -91,8 +104,8 @@ class Handle(object):
         return HumanDuration(self.duration)
 
 
-class HandleResult(Handle):
-    def __init__(self, timings, result):
+class HandleResult(Generic[T], Handle):
+    def __init__(self, timings, result: T):
         super(HandleResult, self).__init__(timings)
         self.__result = result
 
