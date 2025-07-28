@@ -245,23 +245,24 @@ The `throughput_human` unit changes seamlessly from per-second, per-minute, per-
 
 ## Accuracy
 
-`about_time` supports all versions of python, but in pythons >= `3.3` it performs even better, with much higher resolution and smaller propagation of errors, thanks to the new `time.perf_counter`. In older versions, it uses `time.time` as usual.
+`about_time` employs `time.perf_counter()` (instead of `time.time()`), which provides a much higher resolution, and thus a smaller propagation of errors.
 
 ## Changelog highlights:
+- 4.3.0: add typing support for the three modes of operation: context manager, callable and iterable.
 - 4.2.2: fix optional precision parameter not being actually optional; add `py.typed` in the distribution to satisfy mypy and other type checking tools; update build system and github workflow; drop Python 3.7 and include 3.12, 3.13, and 3.14.
-- 4.2.1: makes fixed precision actually gain more resolution, when going from a default 1 to 2 decimals
-- 4.2.0: support for fixed precision, useful when one needs output without varying lengths; official Python 3.11 support
-- 4.1.0: enable to cache features within closures, to improve performance for https://github.com/rsalmei/alive-progress
-- 4.0.0: new version, modeled after my Rust implementation in https://crates.io/crates/human-repr; includes new global features, new objects for each operation, and especially, new simpler human friendly representations; supports Python 3.7+
-- 3.3.0: new interfaces for count_human and throughput_human; support more common Kbyte for base 2 (1024), leaving IEC one as an alternate
-- 3.2.2: support IEC kibibyte standard for base 2 (1024)
-- 3.2.1: support divisor in throughput_human
-- 3.2.0: both durations and throughputs now use 3 significant digits; throughputs now include SI-prefixes
-- 3.1.1: make `duration_human()` and `throughput_human()` available for external use
-- 3.1.0: include support for parameters in callable mode; official support for python 3.8, 3.9 and 3.10
-- 3.0.0: greatly improved the counter/throughput mode, with a single argument and working in real time
-- 2.0.0: feature complete, addition of callable and throughput modes
-- 1.0.0: first public release, context manager mode
+- 4.2.1: makes fixed precision actually gain more resolution, when going from a default 1 to 2 decimals.
+- 4.2.0: support for fixed precision, useful when one needs output without varying lengths; official Python 3.11 support.
+- 4.1.0: enable caching features within closures to improve performance for my other project https://github.com/rsalmei/alive-progress.
+- 4.0.0: new version, modeled after my Rust implementation in https://crates.io/crates/human-repr; includes new global features, new objects for each operation, and especially, new simpler human friendly representations; supports Python 3.7+.
+- 3.3.0: new interfaces for count_human and throughput_human; support more common Kbyte for base 2 (1024), leaving IEC one as an alternate.
+- 3.2.2: support IEC kibibyte standard for base 2 (1024).
+- 3.2.1: support divisor in throughput_human.
+- 3.2.0: both durations and throughputs now use 3 significant digits; throughputs now include SI-prefixes.
+- 3.1.1: make `duration_human()` and `throughput_human()` available for external use.
+- 3.1.0: include support for parameters in callable mode; official support for python 3.8, 3.9 and 3.10.
+- 3.0.0: greatly improved the counter/throughput mode, with a single argument and working in real time.
+- 2.0.0: feature complete, addition of callable and throughput modes.
+- 1.0.0: first public release, context manager mode.
 
 ## License
 
