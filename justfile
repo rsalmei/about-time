@@ -26,7 +26,7 @@ release: build && tag
 tag:
     #!/usr/bin/env zsh
     tag=$(python -c 'import about_time; print(f"v{about_time.__version__}")')
-    git tag -a $tag -m "Details: https://github.com/rsalmei/about-time/"
+    git tag -a $tag -m "Details: https://github.com/rsalmei/about-time#changelog-highlights"
     git push origin $tag
 
 test:
