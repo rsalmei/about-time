@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "about-time"
-version = "4.2.2"
+version = "4.3.0"
 description = "Easily measure timing and throughput of code blocks, with beautiful human friendly representations."
 readme = "README.md"
 requires-python = ">=3.8, <4"
