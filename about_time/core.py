@@ -12,11 +12,16 @@ T = TypeVar("T")
 
 
 @overload
-def about_time(func: Callable[..., T], *args, **kwargs) -> "HandleResult[T]": ...
+def about_time(func: Callable[..., T], *args,
+               **kwargs) -> "HandleResult[T]": ...  # pragma: no cover
+
+
 @overload
-def about_time(it: Iterable[T]) -> "HandleStats": ...
+def about_time(it: Iterable[T]) -> "HandleStats": ...  # pragma: no cover
+
+
 @overload
-def about_time() -> "AbstractContextManager[Handle]": ...
+def about_time() -> "AbstractContextManager[Handle]": ...  # pragma: no cover
 
 
 def about_time(func_or_it: Callable[..., T] | Iterable[T] | None = None, *args, **kwargs):
